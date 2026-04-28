@@ -1,14 +1,18 @@
 import 'dart:math';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/assembled_block.dart';
 import '../models/block_type.dart';
+import '../models/story.dart';
 import 'atelier_state.dart';
+import 'story_provider.dart';
 
 final atelierProvider = NotifierProvider<AtelierController, AtelierState>(
   AtelierController.new,
 );
 
 class AtelierController extends Notifier<AtelierState> {
+  // ... (garder _initial et _surprises identiques)
   static final _initial = <AssembledBlock>[
     AssembledBlock(type: BlockType.ton, value: 'Sombre & Mélancolique'),
     AssembledBlock(type: BlockType.personnage, value: 'Détective désabusé, 45 ans'),
@@ -90,6 +94,23 @@ class AtelierController extends Notifier<AtelierState> {
   }
 
   void resetGenerated() {
-    state = state.copyWith(generated: false, story: '');
+    state = state.copyWith(generated: false, story: '', saved: false);
+  }
+
+  Future<void> saveAsStory() async {
+    if (state.saved || !state.generated) return;
+
+    final newStory = Story(
+      id: DateTime.now().millisecondsSinceEpoch,
+      title: 'Nouvelle Amorce',
+      genre: 'Non défini',
+      blocks: List.from(state.assembled),
+      progress: 0,
+      color: const Color(0xFF7B2FF7),
+      lastEdit: 'À l\'instant',
+    );
+
+    await ref.read(storyProvider.notifier).addStory(newStory);
+    state = state.copyWith(saved: true);
   }
 }

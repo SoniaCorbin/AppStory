@@ -36,7 +36,7 @@ class MeshBlobs extends StatelessWidget {
                   imageFilter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
                   child: DecoratedBox(
                     decoration: BoxDecoration(
-                      color: b.color.withOpacity(0.06),
+                      color: b.color.withValues(alpha: 0.06),
                       borderRadius: BorderRadius.circular(999),
                     ),
                   ),

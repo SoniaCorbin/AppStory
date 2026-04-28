@@ -31,11 +31,11 @@ class _StreakBannerState extends State<StreakBanner> with SingleTickerProviderSt
         borderRadius: BorderRadius.circular(radius),
         gradient: LinearGradient(
           colors: [
-            C.secondary.withOpacity(0.10),
-            const Color(0xFF7B2FF7).withOpacity(0.10),
+            C.secondary.withValues(alpha: 0.10),
+            const Color(0xFF7B2FF7).withValues(alpha: 0.10),
           ],
         ),
-        border: Border.all(color: C.secondary.withOpacity(0.20)),
+        border: Border.all(color: C.secondary.withValues(alpha: 0.20)),
       ),
       child: Row(
         children: [
@@ -44,8 +44,8 @@ class _StreakBannerState extends State<StreakBanner> with SingleTickerProviderSt
             height: 44,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
-              color: C.secondary.withOpacity(0.13),
-              border: Border.all(color: C.secondary.withOpacity(0.35), width: 1.5),
+              color: C.secondary.withValues(alpha: 0.13),
+              border: Border.all(color: C.secondary.withValues(alpha: 0.35), width: 1.5),
             ),
             child: const Center(child: Text('🔥', style: TextStyle(fontSize: 24))),
           ),

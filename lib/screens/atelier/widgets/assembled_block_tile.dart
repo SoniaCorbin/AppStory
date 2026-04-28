@@ -27,7 +27,7 @@ class AssembledBlockTile extends StatelessWidget {
     );
 
     final textStyle = italic
-        ? baseStyle.copyWith(color: baseStyle.color?.withOpacity(0.55))
+        ? baseStyle.copyWith(color: baseStyle.color?.withValues(alpha: 0.55))
         : baseStyle;
 
     return Container(
@@ -35,7 +35,7 @@ class AssembledBlockTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: C.surface2,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: bt.color.withOpacity(0.13)),
+        border: Border.all(color: bt.color.withValues(alpha: 0.13)),
       ),
       child: Row(
         children: [

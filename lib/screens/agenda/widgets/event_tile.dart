@@ -15,7 +15,7 @@ class EventTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: C.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.06)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
       ),
       child: Row(
         children: [
@@ -43,8 +43,8 @@ class EventTile extends StatelessWidget {
             height: 22,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: e.completed ? C.green.withOpacity(0.18) : C.surface2,
-              border: Border.all(color: e.completed ? C.green.withOpacity(0.45) : Colors.white.withOpacity(0.10)),
+              color: e.completed ? C.green.withValues(alpha: 0.18) : C.surface2,
+              border: Border.all(color: e.completed ? C.green.withValues(alpha: 0.45) : Colors.white.withValues(alpha: 0.10)),
             ),
             child: e.completed
                 ? const Center(child: Text('✓', style: TextStyle(color: C.green, fontSize: 12)))

@@ -1,22 +1,35 @@
 import 'package:flutter/material.dart';
 
 import '../../core/constants/story_tokens.dart';
-import'../../core/theme/story_text_styles.dart';
+import '../../core/theme/story_text_styles.dart';
 import '../../models/story.dart';
 import '../../widgets/backgrounds/grid_bg.dart';
 import '../../widgets/backgrounds/mesh_blobs.dart';
 import '../../widgets/chips/block_chip.dart';
+import '../editor/editor_screen.dart';
 
-class StoryDetailScreen extends StatelessWidget {
+class StoryDetailScreen extends StatefulWidget {
   final Story story;
 
   const StoryDetailScreen({super.key, required this.story});
 
+  @override
+  State<StoryDetailScreen> createState() => _StoryDetailScreenState();
+}
+
+class _StoryDetailScreenState extends State<StoryDetailScreen> {
+  late Story story;
+
+  @override
+  void initState() {
+    super.initState();
+    story = widget.story;
+  }
+
   String _mockHook(Story s) {
-    // On reste volontairement "placeholder" tant que l’éditeur n’est pas branché.
-    return "« ${s.title} » est un projet ${s.genre.toLowerCase()} en cours. "
-        "Une idée teinte l’air d’un secret : si le protagoniste avançait d’un pas, "
-        "quel prix devrait-il payer pour atteindre la vérité ?";
+    // Garde ta version si tu en as déjà une.
+    // Celle-ci évite une erreur si tu copies-colles direct.
+    return "Une amorce (placeholder) pour “${s.title}”.";
   }
 
   @override
@@ -24,59 +37,47 @@ class StoryDetailScreen extends StatelessWidget {
     return Scaffold(
       body: Stack(
         children: [
-          const GridBg(opacity: 0.25),
-          const MeshBlobs(warm: true),
-
+          IgnorePointer(child: const GridBg(opacity: 0.25)),
+          IgnorePointer(child: const MeshBlobs(warm: true)),
           Positioned.fill(
             child: ListView(
               padding: const EdgeInsets.only(bottom: 28),
               children: [
-                const SizedBox(height: 56),
-
-                // Top bar
+                const SizedBox(height: 16),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
                   child: Row(
                     children: [
-                      GestureDetector(
-                        onTap: () => Navigator.pop(context),
-                        child: Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: C.surface,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.white.withOpacity(0.06)),
-                          ),
-                          child: const Icon(Icons.arrow_back_rounded, color: C.textMuted),
-                        ),
+                      IconButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: C.textDim),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          'DÉTAIL',
-                          style: StoryText.mono(size: 10, color: C.textDim, letterSpacing: 2),
-                          textAlign: TextAlign.center,
-                        ),
+                      const Spacer(),
+                      IconButton(
+                        onPressed: () {
+                          // Tu peux ajouter un menu contextuel ici si tu veux
+                        },
+                        icon: const Icon(Icons.more_horiz_rounded, color: C.textDim),
                       ),
-                      const SizedBox(width: 44), // équilibre visuel
                     ],
                   ),
                 ),
 
-                // Header card
+                // Header
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: C.surface,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: story.color.withOpacity(0.16)),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('📖 PROJET', style: StoryText.mono(size: 10, color: story.color, letterSpacing: 2.6)),
+                        Text('📖 PROJET',
+                            style: StoryText.mono(size: 10, color: story.color, letterSpacing: 2.6)),
                         const SizedBox(height: 8),
                         Text(story.title, style: StoryText.serif(size: 24, weight: FontWeight.w800)),
                         const SizedBox(height: 10),
@@ -86,14 +87,20 @@ class StoryDetailScreen extends StatelessWidget {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                               decoration: BoxDecoration(
-                                color: story.color.withOpacity(0.12),
+                                color: story.color.withValues(alpha: 0.12),
                                 borderRadius: BorderRadius.circular(999),
-                                border: Border.all(color: story.color.withOpacity(0.22)),
+                                border: Border.all(color: story.color.withValues(alpha: 0.22)),
                               ),
                               child: Text(story.genre, style: StoryText.mono(size: 11, color: story.color)),
                             ),
                             const SizedBox(width: 10),
-                            Text('Dernière modif: ${story.lastEdit}', style: StoryText.sans(size: 12, color: C.textDim)),
+                            Expanded(
+                              child: Text(
+                                'Dernière modif: ${story.lastEdit}',
+                                style: StoryText.sans(size: 12, color: C.textDim),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
                           ],
                         ),
 
@@ -114,7 +121,7 @@ class StoryDetailScreen extends StatelessWidget {
                                     child: Container(
                                       decoration: BoxDecoration(
                                         gradient: LinearGradient(
-                                          colors: [story.color, story.color.withOpacity(0.55)],
+                                          colors: [story.color, story.color.withValues(alpha: 0.55)],
                                         ),
                                       ),
                                     ),
@@ -139,8 +146,8 @@ class StoryDetailScreen extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: C.surface,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: C.accent.withOpacity(0.18)),
-                      boxShadow: [BoxShadow(color: C.accent.withOpacity(0.10), blurRadius: 22)],
+                      border: Border.all(color: C.accent.withValues(alpha: 0.18)),
+                      boxShadow: [BoxShadow(color: C.accent.withValues(alpha: 0.10), blurRadius: 22)],
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -164,19 +171,57 @@ class StoryDetailScreen extends StatelessWidget {
                     style: StoryText.mono(size: 10, color: C.textDim, letterSpacing: 2),
                   ),
                 ),
+
+                // Chips
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
                   child: Wrap(
                     spacing: 8,
                     runSpacing: 8,
                     children: [
-                      for (final bt in story.blocks) BlockChip(type: bt),
+                      for (final b in story.blocks) BlockChip(type: b.type),
                       if (story.blocks.isEmpty)
                         Text('Aucun bloc (pour l’instant).', style: StoryText.sans(size: 13, color: C.textDim)),
                     ],
                   ),
                 ),
 
+                // Contenu des blocs
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+                  child: Column(
+                    children: [
+                      for (final b in story.blocks)
+                        if (b.value.trim().isNotEmpty)
+                          Container(
+                            width: double.infinity,
+                            margin: const EdgeInsets.only(bottom: 10),
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: C.surface,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                BlockChip(type: b.type),
+                                const SizedBox(height: 8),
+                                Text(
+                                  b.value,
+                                  style: StoryText.sans(size: 13, color: C.text).copyWith(height: 1.6),
+                                ),
+                              ],
+                            ),
+                          ),
+                      if (story.blocks.isNotEmpty && story.blocks.every((e) => e.value.trim().isEmpty))
+                        Text(
+                          'Aucun contenu rédigé pour le moment.',
+                          style: StoryText.sans(size: 13, color: C.textDim),
+                        ),
+                    ],
+                  ),
+                ),
                 // Actions
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
@@ -185,15 +230,21 @@ class StoryDetailScreen extends StatelessWidget {
                       Expanded(
                         child: FilledButton(
                           style: FilledButton.styleFrom(
-                            backgroundColor: story.color.withOpacity(0.16),
+                            backgroundColor: story.color.withValues(alpha: 0.16),
                             foregroundColor: story.color,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                             padding: const EdgeInsets.symmetric(vertical: 14),
                           ),
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('EditorScreen (à venir)')),
+                          onPressed: () async {
+                            final updated = await Navigator.of(context).push<Story>(
+                              MaterialPageRoute(
+                                builder: (_) => EditorScreen(story: story),
+                              ),
                             );
+
+                            if (updated == null) return;
+
+                            setState(() => story = updated);
                           },
                           child: const Text('Éditer'),
                         ),
@@ -205,7 +256,7 @@ class StoryDetailScreen extends StatelessWidget {
                           foregroundColor: C.textMuted,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-                          side: BorderSide(color: Colors.white.withOpacity(0.08)),
+                          side: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
                         ),
                         onPressed: () {
                           ScaffoldMessenger.of(context).showSnackBar(

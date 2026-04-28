@@ -4,13 +4,17 @@ import '../../../core/theme/story_text_styles.dart';
 
 class GeneratedStoryCard extends StatelessWidget {
   final String story;
+  final bool saved;
   final VoidCallback onDevelop;
+  final VoidCallback onSave;
   final VoidCallback onReset;
 
   const GeneratedStoryCard({
     super.key,
     required this.story,
+    required this.saved,
     required this.onDevelop,
+    required this.onSave,
     required this.onReset,
   });
 
@@ -24,8 +28,8 @@ class GeneratedStoryCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: C.surface,
         borderRadius: BorderRadius.circular(radius),
-        border: Border.all(color: C.accent.withOpacity(0.20)),
-        boxShadow: [BoxShadow(color: C.accent.withOpacity(0.13), blurRadius: 30)],
+        border: Border.all(color: C.accent.withValues(alpha: 0.20)),
+        boxShadow: [BoxShadow(color: C.accent.withValues(alpha: 0.13), blurRadius: 30)],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -37,9 +41,10 @@ class GeneratedStoryCard extends StatelessWidget {
           Row(
             children: [
               Expanded(
+                flex: 3,
                 child: FilledButton(
                   style: FilledButton.styleFrom(
-                    backgroundColor: C.primary.withOpacity(0.13),
+                    backgroundColor: C.primary.withValues(alpha: 0.13),
                     foregroundColor: C.primary,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     padding: const EdgeInsets.symmetric(vertical: 12),
@@ -48,7 +53,21 @@ class GeneratedStoryCard extends StatelessWidget {
                   child: const Text('Développer →'),
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 8),
+              Expanded(
+                flex: 2,
+                child: FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: saved ? const Color(0xFF00E5A0).withValues(alpha: 0.13) : C.accent.withValues(alpha: 0.13),
+                    foregroundColor: saved ? const Color(0xFF00E5A0) : C.accent,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  onPressed: saved ? null : onSave,
+                  child: Text(saved ? 'Enregistré ✓' : 'Sauver 💾'),
+                ),
+              ),
+              const SizedBox(width: 8),
               FilledButton(
                 style: FilledButton.styleFrom(
                   backgroundColor: C.surface2,

@@ -67,12 +67,12 @@ class MonthGrid extends StatelessWidget {
               onTap: () => onSelect(date),
               child: Container(
                 decoration: BoxDecoration(
-                  color: isSelected ? C.primary.withOpacity(0.18) : C.surface,
+                  color: isSelected ? C.primary.withValues(alpha: 0.18) : C.surface,
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
                     color: isSelected
-                        ? C.primary.withOpacity(0.50)
-                        : Colors.white.withOpacity(0.06),
+                        ? C.primary.withValues(alpha: 0.50)
+                        : Colors.white.withValues(alpha: 0.06),
                   ),
                 ),
                 child: Stack(

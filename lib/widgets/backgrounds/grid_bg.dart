@@ -24,11 +24,11 @@ class _GridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final small = Paint()
-      ..color = C.primary.withOpacity(0.18)
+      ..color = C.primary.withValues(alpha: 0.18)
       ..strokeWidth = 0.3;
 
     final big = Paint()
-      ..color = C.primary.withOpacity(0.14)
+      ..color = C.primary.withValues(alpha: 0.14)
       ..strokeWidth = 0.7;
 
     for (double x = 0; x <= size.width; x += 20) {

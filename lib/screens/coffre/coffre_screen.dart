@@ -79,7 +79,7 @@ class _CoffreScreenState extends State<CoffreScreen> {
                   decoration: BoxDecoration(
                     color: C.surface,
                     borderRadius: BorderRadius.circular(999),
-                    border: Border.all(color: Colors.white.withOpacity(0.06)),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
                   ),
                   child: Row(
                     children: [
@@ -99,7 +99,7 @@ class _CoffreScreenState extends State<CoffreScreen> {
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     itemCount: filters.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 8),
+                    separatorBuilder: (_, _) => const SizedBox(width: 8),
                     itemBuilder: (context, i) {
                       final f = filters[i];
                       final sel = filter == f;
@@ -108,10 +108,10 @@ class _CoffreScreenState extends State<CoffreScreen> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
                           decoration: BoxDecoration(
-                            color: sel ? C.secondary.withOpacity(0.13) : C.surface,
+                            color: sel ? C.secondary.withValues(alpha: 0.13) : C.surface,
                             borderRadius: BorderRadius.circular(999),
                             border: Border.all(
-                              color: sel ? C.secondary.withOpacity(0.40) : Colors.white.withOpacity(0.06),
+                              color: sel ? C.secondary.withValues(alpha: 0.40) : Colors.white.withValues(alpha: 0.06),
                             ),
                           ),
                           child: Center(
@@ -184,7 +184,7 @@ class _CoffreScreenState extends State<CoffreScreen> {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: C.secondary.withOpacity(0.40),
+                    color: C.secondary.withValues(alpha: 0.40),
                     blurRadius: 24,
                     offset: const Offset(0, 6),
                   ),

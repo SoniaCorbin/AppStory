@@ -27,13 +27,17 @@ class _CoffreCardState extends State<CoffreCard> {
       onTapCancel: () => setState(() => pressed = false),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 140),
-        transform: Matrix4.identity()..scale(pressed ? 0.985 : 1.0),
+        transform: Matrix4.diagonal3Values(
+          pressed ? 0.985 : 1.0,
+          pressed ? 0.985 : 1.0,
+          1.0,
+        ),
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
           color: C.surface,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: item.color.withOpacity(0.10)),
+          border: Border.all(color: item.color.withValues(alpha: 0.10)),
         ),
         child: Row(
           children: [
@@ -41,9 +45,9 @@ class _CoffreCardState extends State<CoffreCard> {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: item.color.withOpacity(0.10),
+                color: item.color.withValues(alpha: 0.10),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: item.color.withOpacity(0.20)),
+                border: Border.all(color: item.color.withValues(alpha: 0.20)),
               ),
               child: Center(child: Text(item.icon, style: const TextStyle(fontSize: 18))),
             ),
@@ -67,7 +71,7 @@ class _CoffreCardState extends State<CoffreCard> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
-                            color: item.color.withOpacity(0.10),
+                            color: item.color.withValues(alpha: 0.10),
                             borderRadius: BorderRadius.circular(999),
                           ),
                           child: Text(t, style: StoryText.mono(size: 10, color: item.color)),

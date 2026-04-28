@@ -103,7 +103,7 @@ class _AgendaScreenState extends State<AgendaScreen> {
                         decoration: BoxDecoration(
                           color: C.surface,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.white.withOpacity(0.06)),
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
                         ),
                         child: const Icon(Icons.chevron_left_rounded, color: C.textMuted),
                       ),
@@ -124,7 +124,7 @@ class _AgendaScreenState extends State<AgendaScreen> {
                         decoration: BoxDecoration(
                           color: C.surface,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.white.withOpacity(0.06)),
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
                         ),
                         child: const Icon(Icons.chevron_right_rounded, color: C.textMuted),
                       ),
@@ -141,7 +141,7 @@ class _AgendaScreenState extends State<AgendaScreen> {
                   decoration: BoxDecoration(
                     color: C.surface,
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: C.green.withOpacity(0.12)),
+                    border: Border.all(color: C.green.withValues(alpha: 0.12)),
                   ),
                   child: MonthGrid(
                     month: month,
@@ -178,7 +178,7 @@ class _AgendaScreenState extends State<AgendaScreen> {
                   decoration: BoxDecoration(
                     color: C.surface,
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: Colors.white.withOpacity(0.06)),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
                   ),
                   child: Text(
                     'Aucun événement ce jour-là.',
@@ -202,9 +202,9 @@ class _AgendaScreenState extends State<AgendaScreen> {
               height: 54,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: LinearGradient(colors: [C.green, C.green.withOpacity(0.55)]),
+                gradient: LinearGradient(colors: [C.green, C.green.withValues(alpha: 0.55)]),
                 boxShadow: [
-                  BoxShadow(color: C.green.withOpacity(0.35), blurRadius: 24, offset: const Offset(0, 6)),
+                  BoxShadow(color: C.green.withValues(alpha: 0.35), blurRadius: 24, offset: const Offset(0, 6)),
                 ],
               ),
               child: const Center(
@@ -248,7 +248,7 @@ class _AgendaScreenState extends State<AgendaScreen> {
                 width: double.infinity,
                 child: FilledButton(
                   style: FilledButton.styleFrom(
-                    backgroundColor: C.green.withOpacity(0.18),
+                    backgroundColor: C.green.withValues(alpha: 0.18),
                     foregroundColor: C.green,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     padding: const EdgeInsets.symmetric(vertical: 14),

@@ -29,7 +29,7 @@ class DrawerMenu extends StatelessWidget {
             // Backdrop: cliquer ici ferme le drawer
             GestureDetector(
               onTap: onClose,
-              child: Container(color: Colors.black.withOpacity(0.6)),
+              child: Container(color: Colors.black.withValues(alpha: 0.6)),
             ),
 
             // Panel: ne doit PAS fermer quand on clique dedans
@@ -42,10 +42,10 @@ class DrawerMenu extends StatelessWidget {
                   color: C.surface,
                   child: Container(
                     decoration: BoxDecoration(
-                      border: Border(right: BorderSide(color: Colors.white.withOpacity(0.06))),
+                      border: Border(right: BorderSide(color: Colors.white.withValues(alpha: 0.06))),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.5),
+                          color: Colors.black.withValues(alpha: 0.5),
                           blurRadius: 40,
                           offset: const Offset(6, 0),
                         ),
@@ -70,9 +70,9 @@ class DrawerMenu extends StatelessWidget {
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
                                         gradient: LinearGradient(
-                                          colors: [C.primary.withOpacity(0.27), C.accent.withOpacity(0.27)],
+                                          colors: [C.primary.withValues(alpha: 0.27), C.accent.withValues(alpha: 0.27)],
                                         ),
-                                        border: Border.all(color: C.primary.withOpacity(0.33), width: 2),
+                                        border: Border.all(color: C.primary.withValues(alpha: 0.33), width: 2),
                                       ),
                                       child: const Center(child: Text('🖊', style: TextStyle(fontSize: 26))),
                                     ),
@@ -111,7 +111,7 @@ class DrawerMenu extends StatelessWidget {
                                         child: Container(
                                           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 13),
                                           decoration: BoxDecoration(
-                                            color: isActive ? C.primary.withOpacity(0.07) : Colors.transparent,
+                                            color: isActive ? C.primary.withValues(alpha: 0.07) : Colors.transparent,
                                             border: Border(
                                               left: BorderSide(
                                                 color: isActive ? C.primary : Colors.transparent,
@@ -167,7 +167,7 @@ class DrawerMenu extends StatelessWidget {
                                     // Divider
                                     Padding(
                                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                                      child: Container(height: 1, color: Colors.white.withOpacity(0.05)),
+                                      child: Container(height: 1, color: Colors.white.withValues(alpha: 0.05)),
                                     ),
 
                                     Padding(

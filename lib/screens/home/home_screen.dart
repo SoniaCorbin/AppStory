@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/story_tokens.dart';
 import '../../core/theme/story_text_styles.dart';
 import '../../data/mock/mock_notes.dart';
 import '../../data/mock/mock_stories.dart';
 import '../../models/story.dart';
+import '../../state/story_provider.dart';
 import '../../widgets/backgrounds/grid_bg.dart';
 import '../../widgets/backgrounds/mesh_blobs.dart';
 import 'widgets/streak_banner.dart';
 import 'widgets/story_card.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends ConsumerWidget {
   final VoidCallback onMenu;
   final VoidCallback onSearch;
   final ValueChanged<Story> onStory;
@@ -22,11 +24,14 @@ class HomeScreen extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final stories = ref.watch(storyProvider);
+    final displayStories = stories.isEmpty ? recentStories : stories;
+
     return Stack(
       children: [
-        const GridBg(opacity: 0.25),
-        const MeshBlobs(warm: true),
+        IgnorePointer(child: const GridBg(opacity: 0.25)),
+        IgnorePointer(child: const MeshBlobs(warm: true)),
         Positioned.fill(
           child: ListView(
             padding: const EdgeInsets.only(bottom: 110),
@@ -44,12 +49,12 @@ class HomeScreen extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
                 child: Row(
-                  children: const [
-                    Expanded(child: _StatTile(n: '12', label: 'Projets', color: C.primary)),
-                    SizedBox(width: 10),
-                    Expanded(child: _StatTile(n: '147', label: 'Blocs', color: C.secondary)),
-                    SizedBox(width: 10),
-                    Expanded(child: _StatTile(n: '38', label: 'Notes', color: C.accent)),
+                  children: [
+                    Expanded(child: _StatTile(n: '${displayStories.length}', label: 'Projets', color: C.primary)),
+                    const SizedBox(width: 10),
+                    const Expanded(child: _StatTile(n: '147', label: 'Blocs', color: C.secondary)),
+                    const SizedBox(width: 10),
+                    const Expanded(child: _StatTile(n: '38', label: 'Notes', color: C.accent)),
                   ],
                 ),
               ),
@@ -71,7 +76,7 @@ class HomeScreen extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
                 child: Column(
                   children: [
-                    for (final s in recentStories) ...[
+                    for (final s in displayStories) ...[
                       StoryCard(story: s, onPressed: () => onStory(s)),
                       const SizedBox(height: 12),
                     ],
@@ -89,8 +94,8 @@ class HomeScreen extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                       decoration: BoxDecoration(
-                        color: C.primary.withOpacity(0.12),
-                        border: Border.all(color: C.primary.withOpacity(0.27)),
+                        color: C.primary.withValues(alpha: 0.12),
+                        border: Border.all(color: C.primary.withValues(alpha: 0.27)),
                         borderRadius: BorderRadius.circular(999),
                       ),
                       child: Text('+ Ajouter', style: StoryText.mono(size: 10, color: C.primary)),
@@ -159,8 +164,8 @@ class _HomeHeader extends StatelessWidget {
               height: 44,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: LinearGradient(colors: [C.primary.withOpacity(0.27), C.accent.withOpacity(0.27)]),
-                border: Border.all(color: C.primary.withOpacity(0.27), width: 1.5),
+                gradient: LinearGradient(colors: [C.primary.withValues(alpha: 0.27), C.accent.withValues(alpha: 0.27)]),
+                border: Border.all(color: C.primary.withValues(alpha: 0.27), width: 1.5),
               ),
               child: const Center(child: Text('◉', style: TextStyle(fontSize: 20, color: C.textMuted))),
             ),
@@ -179,7 +184,7 @@ class _HomeHeader extends StatelessWidget {
             decoration: BoxDecoration(
               color: C.surface,
               borderRadius: BorderRadius.circular(999),
-              border: Border.all(color: Colors.white.withOpacity(0.06)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
             ),
             child: Row(
               children: [
@@ -221,14 +226,14 @@ class _StatTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: C.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withOpacity(0.13)),
+        border: Border.all(color: color.withValues(alpha: 0.13)),
       ),
       child: Stack(
         children: [
           Positioned(
             right: -4,
             bottom: -10,
-            child: Text('◈', style: TextStyle(fontSize: 36, color: Colors.white.withOpacity(0.06))),
+            child: Text('◈', style: TextStyle(fontSize: 36, color: Colors.white.withValues(alpha: 0.06))),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -257,7 +262,7 @@ class _QuickNoteTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: C.surface,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.white.withOpacity(0.04)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.04)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

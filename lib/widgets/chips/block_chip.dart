@@ -21,15 +21,19 @@ class BlockChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = type.color;
-    final bg = selected ? c.withOpacity(0.20) : c.withOpacity(0.10);
-    final border = selected ? c.withOpacity(0.55) : c.withOpacity(0.20);
+    final bg = selected ? c.withValues(alpha: 0.20) : c.withValues(alpha: 0.10);
+    final border = selected ? c.withValues(alpha: 0.55) : c.withValues(alpha: 0.20);
 
     return GestureDetector(
       onTap: onPressed,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         curve: Curves.easeOut,
-        transform: Matrix4.identity()..scale(selected ? 1.04 : 1.0),
+        transform: Matrix4.diagonal3Values(
+          selected ? 1.04 : 1.0,
+          selected ? 1.04 : 1.0,
+          1.0,
+        ),
         padding: EdgeInsets.symmetric(
           horizontal: mini ? 10 : 14,
           vertical: mini ? 4 : 7,

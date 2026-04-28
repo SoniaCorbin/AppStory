@@ -67,9 +67,9 @@ class AtelierScreen extends ConsumerWidget {
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                             decoration: BoxDecoration(
-                              color: C.accent.withOpacity(0.13),
+                              color: C.accent.withValues(alpha: 0.13),
                               borderRadius: BorderRadius.circular(999),
-                              border: Border.all(color: C.accent.withOpacity(0.27)),
+                              border: Border.all(color: C.accent.withValues(alpha: 0.27)),
                             ),
                             child: Row(
                               children: [
@@ -115,7 +115,7 @@ class AtelierScreen extends ConsumerWidget {
                       decoration: BoxDecoration(
                         color: C.surface,
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: C.primary.withOpacity(0.13)),
+                        border: Border.all(color: C.primary.withValues(alpha: 0.13)),
                       ),
                       child: st.assembled.isEmpty
                           ? Padding(
@@ -168,6 +168,8 @@ class AtelierScreen extends ConsumerWidget {
               if (st.generated)
                 GeneratedStoryCard(
                   story: st.story,
+                  saved: st.saved,
+                  onSave: ctrl.saveAsStory,
                   onDevelop: onEdit,
                   onReset: ctrl.resetGenerated,
                 ),

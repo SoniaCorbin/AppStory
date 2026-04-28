@@ -1,13 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 
+part 'block_type.g.dart';
+
+@HiveType(typeId: 0)
 enum BlockType {
+  @HiveField(0)
   ton,
+  @HiveField(1)
   personnage,
+  @HiveField(2)
   lieu,
+  @HiveField(3)
   objectif,
+  @HiveField(4)
   obstacle,
+  @HiveField(5)
   twist,
+  @HiveField(6)
   fin,
+  @HiveField(7)
   conflit,
 }
 

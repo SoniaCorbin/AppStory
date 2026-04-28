@@ -28,16 +28,20 @@ class _StoryCardState extends State<StoryCard> {
       onTapCancel: () => setState(() => pressed = false),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 140),
-        transform: Matrix4.identity()..scale(pressed ? 0.98 : 1.0),
+        transform: Matrix4.diagonal3Values(
+          pressed ? 0.98 : 1.0,
+          pressed ? 0.98 : 1.0,
+          1.0,
+        ),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: C.surface,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: s.color.withOpacity(0.13)),
+          border: Border.all(color: s.color.withValues(alpha: 0.13)),
           boxShadow: [
             if (!pressed)
               BoxShadow(
-                color: Colors.black.withOpacity(0.30),
+                color: Colors.black.withValues(alpha: 0.30),
                 blurRadius: 20,
                 offset: const Offset(0, 4),
               ),
@@ -81,7 +85,7 @@ class _StoryCardState extends State<StoryCard> {
                   spacing: 6,
                   runSpacing: 6,
                   children: [
-                    for (final b in s.blocks) BlockChip(type: b, mini: true),
+                    for (final b in s.blocks) BlockChip(type: b.type),
                   ],
                 ),
                 const SizedBox(height: 12),
@@ -99,7 +103,7 @@ class _StoryCardState extends State<StoryCard> {
                               widthFactor: s.progress / 100.0,
                               child: Container(
                                 decoration: BoxDecoration(
-                                  gradient: LinearGradient(colors: [s.color, s.color.withOpacity(0.53)]),
+                                  gradient: LinearGradient(colors: [s.color, s.color.withValues(alpha: 0.53)]),
                                 ),
                               ),
                             ),

@@ -58,7 +58,7 @@ class _RingPainter extends CustomPainter {
 
     final arc = Paint()
     ..shader = LinearGradient(
-      colors: [color, color.withOpacity(0.4)],
+      colors: [color, color.withValues(alpha: 0.4)],
     ).createShader(Rect.fromCircle(center: center, radius: radius))
     ..style = PaintingStyle.stroke
     ..strokeWidth = 10

@@ -67,7 +67,7 @@ class ProfilScreen extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: C.surface,
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: C.primary.withOpacity(0.12)),
+                    border: Border.all(color: C.primary.withValues(alpha: 0.12)),
                   ),
                   child: Row(
                     children: [
@@ -77,9 +77,9 @@ class ProfilScreen extends StatelessWidget {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           gradient: LinearGradient(
-                            colors: [C.primary.withOpacity(0.27), C.accent.withOpacity(0.27)],
+                            colors: [C.primary.withValues(alpha: 0.27), C.accent.withValues(alpha: 0.27)],
                           ),
-                          border: Border.all(color: C.primary.withOpacity(0.33), width: 2),
+                          border: Border.all(color: C.primary.withValues(alpha: 0.33), width: 2),
                         ),
                         child: const Center(child: Text('🖊', style: TextStyle(fontSize: 26))),
                       ),
@@ -106,7 +106,7 @@ class ProfilScreen extends StatelessWidget {
                                         child: Container(
                                           decoration: BoxDecoration(
                                             gradient: LinearGradient(
-                                              colors: [C.primary, C.primary.withOpacity(0.55)],
+                                              colors: [C.primary, C.primary.withValues(alpha: 0.55)],
                                             ),
                                           ),
                                         ),
@@ -137,7 +137,7 @@ class ProfilScreen extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: C.surface,
                           borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: C.accent.withOpacity(0.12)),
+                          border: Border.all(color: C.accent.withValues(alpha: 0.12)),
                         ),
                         child: const Center(
                           child: ProgressRing(
@@ -238,7 +238,7 @@ class _MiniStat extends StatelessWidget {
       decoration: BoxDecoration(
         color: C.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withOpacity(0.12)),
+        border: Border.all(color: color.withValues(alpha: 0.12)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -271,7 +271,7 @@ class _BadgeTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: C.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withOpacity(0.06)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -319,7 +319,7 @@ class _ActionRow extends StatelessWidget {
         decoration: BoxDecoration(
           color: C.surface,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.white.withOpacity(0.06)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
         ),
         child: Row(
           children: [

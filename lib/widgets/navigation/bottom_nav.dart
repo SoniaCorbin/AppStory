@@ -21,8 +21,8 @@ class BottomNav extends StatelessWidget {
           height: 80,
           padding: const EdgeInsets.only(bottom: 10),
           decoration: BoxDecoration(
-            color: C.bg.withOpacity(0.85),
-            border: Border(top: BorderSide(color: C.primary.withOpacity(0.12))),
+            color: C.bg.withValues(alpha: 0.85),
+            border: Border(top: BorderSide(color: C.primary.withValues(alpha: 0.12))),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -34,7 +34,7 @@ class BottomNav extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
-                    color: isActive ? C.primary.withOpacity(0.12) : Colors.transparent,
+                    color: isActive ? C.primary.withValues(alpha: 0.12) : Colors.transparent,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
