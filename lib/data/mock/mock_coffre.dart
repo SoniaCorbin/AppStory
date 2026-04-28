@@ -1,0 +1,55 @@
+import 'package:flutter/material.dart';
+import '../../models/coffre_item.dart';
+
+final coffreItems = <CoffreItem>[
+  CoffreItem(
+    id: 1,
+    type: CoffreItemType.projet,
+    icon: '📖',
+    title: 'Les Ombres de Versailles',
+    tags: ['Thriller', 'Historique'],
+    date: '23 avr',
+    pinned: true,
+    color: const Color(0xFF00D4FF),
+  ),
+  CoffreItem(
+    id: 2,
+    type: CoffreItemType.note,
+    icon: '💡',
+    title: 'Le miroir peut être une porte',
+    tags: ['Idée', 'Fantastique'],
+    date: '22 avr',
+    pinned: false,
+    color: const Color(0xFFFFD700),
+  ),
+  CoffreItem(
+    id: 3,
+    type: CoffreItemType.projet,
+    icon: '📖',
+    title: 'Le Dernier Signal',
+    tags: ['Sci-fi', 'Dystopie'],
+    date: '21 avr',
+    pinned: false,
+    color: const Color(0xFF7B2FF7),
+  ),
+  CoffreItem(
+    id: 4,
+    type: CoffreItemType.note,
+    icon: '🖊',
+    title: 'Notes de recherche — Paris 1920',
+    tags: ['Recherche', 'Histoire'],
+    date: '18 avr',
+    pinned: false,
+    color: const Color(0xFF00E5A0),
+  ),
+  CoffreItem(
+    id: 5,
+    type: CoffreItemType.note,
+    icon: '💭',
+    title: 'Pense-bête : noms de personnages',
+    tags: ['Référence'],
+    date: '15 avr',
+    pinned: false,
+    color: const Color(0xFFFF6B35),
+  ),
+];
