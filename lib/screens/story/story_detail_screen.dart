@@ -26,10 +26,9 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
     story = widget.story;
   }
 
-  String _mockHook(Story s) {
-    // Garde ta version si tu en as déjà une.
-    // Celle-ci évite une erreur si tu copies-colles direct.
-    return "Une amorce (placeholder) pour “${s.title}”.";
+  String _displayHook(Story s) {
+    if (s.hook.trim().isNotEmpty) return s.hook;
+    return "Aucune amorce pour cette histoire. Lance une génération depuis l'Atelier !";
   }
 
   @override
@@ -155,7 +154,7 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
                         Text('✦ AMORCE', style: StoryText.mono(size: 10, color: C.accent, letterSpacing: 2.2)),
                         const SizedBox(height: 10),
                         Text(
-                          _mockHook(story),
+                          _displayHook(story),
                           style: StoryText.serif(size: 14, style: FontStyle.italic).copyWith(height: 1.8),
                         ),
                       ],

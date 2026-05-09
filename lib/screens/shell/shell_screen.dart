@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/constants/story_tokens.dart';
 import '../../models/story.dart';
+import '../../state/story_provider.dart';
 import '../profil/profil_screen.dart';
 import '../agenda/agenda_screen.dart';
+import '../editor/editor_screen.dart';
 
 import '../atelier/atelier_screen.dart';
 import '../coffre/coffre_screen.dart';
@@ -14,14 +17,14 @@ import '../../widgets/navigation/bottom_nav.dart';
 import '../../widgets/navigation/drawer_menu.dart';
 import 'nav_items.dart';
 
-class ShellScreen extends StatefulWidget {
+class ShellScreen extends ConsumerStatefulWidget {
   const ShellScreen({super.key});
 
   @override
-  State<ShellScreen> createState() => _ShellScreenState();
+  ConsumerState<ShellScreen> createState() => _ShellScreenState();
 }
 
-class _ShellScreenState extends State<ShellScreen> {
+class _ShellScreenState extends ConsumerState<ShellScreen> {
   NavTab active = NavTab.home;
   bool showDrawer = false;
 
@@ -35,13 +38,24 @@ class _ShellScreenState extends State<ShellScreen> {
 
   void _openSearch() {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Search (à venir)')),
+      const SnackBar(content: Text('Recherche (à venir)')),
     );
   }
 
+  /// Ouvre l'éditeur pour la dernière histoire sauvegardée.
+  /// Utilisé après "Sauvegarder + Développer" dans l'Atelier.
   void _openEditor() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Editor (à venir)')),
+    final latest = ref.read(storyProvider.notifier).latest;
+    if (latest == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Sauvegarde d\'abord une amorce !')),
+      );
+      return;
+    }
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => EditorScreen(story: latest),
+      ),
     );
   }
 

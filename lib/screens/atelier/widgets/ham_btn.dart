@@ -17,12 +17,13 @@ class HamBtn extends StatelessWidget {
     );
 
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: onMenu,
       child: Padding(
         padding: const EdgeInsets.only(bottom: 10),
         child: SizedBox(
-          width: 40,
-          height: 40,
+          width: 44,
+          height: 44,
           child: Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,

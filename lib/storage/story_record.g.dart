@@ -24,13 +24,14 @@ class StoryRecordAdapter extends TypeAdapter<StoryRecord> {
       progress: fields[4] as int,
       colorValue: fields[5] as int,
       lastEdit: fields[6] as String,
+      hook: fields[7] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, StoryRecord obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(8)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -44,7 +45,9 @@ class StoryRecordAdapter extends TypeAdapter<StoryRecord> {
       ..writeByte(5)
       ..write(obj.colorValue)
       ..writeByte(6)
-      ..write(obj.lastEdit);
+      ..write(obj.lastEdit)
+      ..writeByte(7)
+      ..write(obj.hook);
   }
 
   @override

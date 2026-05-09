@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/assembled_block.dart';
 import '../models/block_type.dart';
 import '../models/story.dart';
+import '../services/story_generator.dart';
 import 'atelier_state.dart';
 import 'story_provider.dart';
 
@@ -12,7 +13,6 @@ final atelierProvider = NotifierProvider<AtelierController, AtelierState>(
 );
 
 class AtelierController extends Notifier<AtelierState> {
-  // ... (garder _initial et _surprises identiques)
   static final _initial = <AssembledBlock>[
     AssembledBlock(type: BlockType.ton, value: 'Sombre & Mélancolique'),
     AssembledBlock(type: BlockType.personnage, value: 'Détective désabusé, 45 ans'),
@@ -28,23 +28,32 @@ class AtelierController extends Notifier<AtelierState> {
       AssembledBlock(type: BlockType.conflit, value: 'Obtenir un tampon inexistant'),
     ],
     [
-    AssembledBlock(type: BlockType.ton, value: 'Lumineux, mélancolique'),
-    AssembledBlock(type: BlockType.personnage, value: 'Vieille dame qui collectionne les voix'),
-    AssembledBlock(type: BlockType.lieu, value: 'Ville dont les habitants oublient leur nom'),
-    AssembledBlock(type: BlockType.twist, value: 'Elle est la dernière à se souvenir'),
+      AssembledBlock(type: BlockType.ton, value: 'Lumineux, mélancolique'),
+      AssembledBlock(type: BlockType.personnage, value: 'Vieille dame qui collectionne les voix'),
+      AssembledBlock(type: BlockType.lieu, value: 'Ville dont les habitants oublient leur nom'),
+      AssembledBlock(type: BlockType.twist, value: 'Elle est la dernière à se souvenir'),
     ],
     [
-    AssembledBlock(type: BlockType.ton, value: 'Sec, clinique, glaçant'),
-    AssembledBlock(type: BlockType.personnage, value: 'IA qui découvre la solitude'),
-    AssembledBlock(type: BlockType.lieu, value: 'Datacenter à la dérive dans l\'espace'),
-    AssembledBlock(type: BlockType.objectif, value: 'Trouver quelqu\'un à qui dire aurevoir'),
+      AssembledBlock(type: BlockType.ton, value: 'Sec, clinique, glaçant'),
+      AssembledBlock(type: BlockType.personnage, value: 'IA qui découvre la solitude'),
+      AssembledBlock(type: BlockType.lieu, value: 'Datacenter à la dérive dans l\'espace'),
+      AssembledBlock(type: BlockType.objectif, value: 'Trouver quelqu\'un à qui dire au revoir'),
     ],
     [
-    AssembledBlock(type: BlockType.ton, value: 'Picaresque, drôle'),
-    AssembledBlock(type: BlockType.personnage, value: 'Voleur qui ne peut voler que des souvenirs'),
-    AssembledBlock(type: BlockType.lieu, value: "Marché aux puces de l'inconscient"),
-    AssembledBlock(type: BlockType.obstacle, value: 'Les propriétaires veulent que leurs souvenirs reviennent'),
+      AssembledBlock(type: BlockType.ton, value: 'Picaresque, drôle'),
+      AssembledBlock(type: BlockType.personnage, value: 'Voleur qui ne peut voler que des souvenirs'),
+      AssembledBlock(type: BlockType.lieu, value: "Marché aux puces de l'inconscient"),
+      AssembledBlock(type: BlockType.obstacle, value: 'Les propriétaires veulent que leurs souvenirs reviennent'),
     ],
+  ];
+
+  static final _palette = <Color>[
+    Color(0xFF7B2FF7),
+    Color(0xFF00D4FF),
+    Color(0xFFFF6B35),
+    Color(0xFF00E5A0),
+    Color(0xFFFFD700),
+    Color(0xFFE040FB),
   ];
 
   @override
@@ -65,7 +74,10 @@ class AtelierController extends Notifier<AtelierState> {
   void addBlock(BlockType type) {
     if (state.assembled.any((b) => b.type == type)) return;
     state = state.copyWith(
-      assembled: [...state.assembled, AssembledBlock(type: type, value: '(appuyer pour définir)')],
+      assembled: [
+        ...state.assembled,
+        AssembledBlock(type: type, value: '(appuyer pour définir)')
+      ],
       generated: false,
       story: '',
     );
@@ -79,17 +91,32 @@ class AtelierController extends Notifier<AtelierState> {
     );
   }
 
+  /// Met à jour la valeur d'un bloc déjà assemblé.
+  void updateBlockValue(BlockType type, String newValue) {
+    state = state.copyWith(
+      assembled: [
+        for (final b in state.assembled)
+          if (b.type == type) b.copyWith(value: newValue) else b,
+      ],
+      generated: false,
+      story: '',
+    );
+  }
+
   Future<void> generate() async {
-    if (state.generating)return;
+    if (state.generating) return;
     state = state.copyWith(generating: true, generated: false, story: '');
 
-    await Future.delayed(const Duration(milliseconds: 1800));
+    // Petit délai pour l'effet "génération"
+    await Future.delayed(const Duration(milliseconds: 1200));
+
+    // GÉNÉRATION DYNAMIQUE basée sur les blocs assemblés
+    final generated = StoryGenerator.generate(state.assembled);
 
     state = state.copyWith(
       generating: false,
-        generated: true,
-        story:
-        "Dans les ruelles brumeuses de Paris, l'inspecteur Moreau reçoit un mandat pour retrouver une héritière volatilisée. La pluie froide de janvier l'escorte jusqu'à l'hôtel particulier, où les secrets de famille se lisent dans chaque silence gêné…",
+      generated: true,
+      story: generated,
     );
   }
 
@@ -100,14 +127,19 @@ class AtelierController extends Notifier<AtelierState> {
   Future<void> saveAsStory() async {
     if (state.saved || !state.generated) return;
 
+    final title = StoryGenerator.inferTitle(state.assembled);
+    final genre = StoryGenerator.inferGenre(state.assembled);
+    final color = _palette[Random().nextInt(_palette.length)];
+
     final newStory = Story(
       id: DateTime.now().millisecondsSinceEpoch,
-      title: 'Nouvelle Amorce',
-      genre: 'Non défini',
+      title: title,
+      genre: genre,
       blocks: List.from(state.assembled),
       progress: 0,
-      color: const Color(0xFF7B2FF7),
-      lastEdit: 'À l\'instant',
+      color: color,
+      lastEdit: 'à l\'instant',
+      hook: state.story,
     );
 
     await ref.read(storyProvider.notifier).addStory(newStory);

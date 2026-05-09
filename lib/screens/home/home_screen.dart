@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/story_tokens.dart';
 import '../../core/theme/story_text_styles.dart';
-import '../../data/mock/mock_notes.dart';
-import '../../data/mock/mock_stories.dart';
+import '../../models/coffre_item.dart';
 import '../../models/story.dart';
+import '../../state/coffre_provider.dart';
 import '../../state/story_provider.dart';
 import '../../widgets/backgrounds/grid_bg.dart';
 import '../../widgets/backgrounds/mesh_blobs.dart';
@@ -23,10 +23,34 @@ class HomeScreen extends ConsumerWidget {
     required this.onStory,
   });
 
+  String _todayLabel() {
+    const days = [
+      'LUNDI', 'MARDI', 'MERCREDI', 'JEUDI', 'VENDREDI', 'SAMEDI', 'DIMANCHE'
+    ];
+    const months = [
+      'JAN', 'FÉV', 'MAR', 'AVR', 'MAI', 'JUIN',
+      'JUIL', 'AOÛT', 'SEPT', 'OCT', 'NOV', 'DÉC'
+    ];
+    final now = DateTime.now();
+    return '${days[now.weekday - 1]} · ${now.day} ${months[now.month - 1]}';
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final stories = ref.watch(storyProvider);
-    final displayStories = stories.isEmpty ? recentStories : stories;
+    final coffre = ref.watch(coffreProvider);
+
+    // Stats dynamiques
+    final projetsCount = stories.length;
+    final blocsCount = stories.fold<int>(0, (sum, s) => sum + s.blocks.length);
+    final notesCount =
+        coffre.where((i) => i.type == CoffreItemType.note).length;
+
+    // Notes récentes du coffre
+    final recentNotes = coffre
+        .where((i) => i.type == CoffreItemType.note)
+        .take(3)
+        .toList();
 
     return Stack(
       children: [
@@ -42,19 +66,32 @@ class HomeScreen extends ConsumerWidget {
                 child: _HomeHeader(
                   onMenu: onMenu,
                   onSearch: onSearch,
+                  dateLabel: _todayLabel(),
                 ),
               ),
 
-              // Stats strip
+              // Stats strip — DYNAMIQUE
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
                 child: Row(
                   children: [
-                    Expanded(child: _StatTile(n: '${displayStories.length}', label: 'Projets', color: C.primary)),
+                    Expanded(
+                        child: _StatTile(
+                            n: '$projetsCount',
+                            label: 'Projets',
+                            color: C.primary)),
                     const SizedBox(width: 10),
-                    const Expanded(child: _StatTile(n: '147', label: 'Blocs', color: C.secondary)),
+                    Expanded(
+                        child: _StatTile(
+                            n: '$blocsCount',
+                            label: 'Blocs',
+                            color: C.secondary)),
                     const SizedBox(width: 10),
-                    const Expanded(child: _StatTile(n: '38', label: 'Notes', color: C.accent)),
+                    Expanded(
+                        child: _StatTile(
+                            n: '$notesCount',
+                            label: 'Notes',
+                            color: C.accent)),
                   ],
                 ),
               ),
@@ -67,8 +104,13 @@ class HomeScreen extends ConsumerWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('RÉCENTS', style: StoryText.mono(size: 11, color: C.textMuted, letterSpacing: 2)),
-                    Text('Voir tout →', style: StoryText.mono(size: 10, color: C.primary)),
+                    Text('RÉCENTS',
+                        style: StoryText.mono(
+                            size: 11,
+                            color: C.textMuted,
+                            letterSpacing: 2)),
+                    Text('${stories.length} histoire${stories.length > 1 ? 's' : ''}',
+                        style: StoryText.mono(size: 10, color: C.primary)),
                   ],
                 ),
               ),
@@ -76,30 +118,51 @@ class HomeScreen extends ConsumerWidget {
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
                 child: Column(
                   children: [
-                    for (final s in displayStories) ...[
-                      StoryCard(story: s, onPressed: () => onStory(s)),
-                      const SizedBox(height: 12),
-                    ],
+                    if (stories.isEmpty)
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: C.surface,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.06)),
+                        ),
+                        child: Column(
+                          children: [
+                            const Text('✦', style: TextStyle(fontSize: 28)),
+                            const SizedBox(height: 8),
+                            Text('Aucune histoire encore.',
+                                style: StoryText.sans(
+                                    size: 13, color: C.textMuted)),
+                            const SizedBox(height: 4),
+                            Text('Va dans l\'Atelier pour en créer une !',
+                                style: StoryText.sans(
+                                    size: 12,
+                                    color: C.textDim,
+                                    style: FontStyle.italic)),
+                          ],
+                        ),
+                      )
+                    else
+                      for (final s in stories.reversed.take(5)) ...[
+                        StoryCard(story: s, onPressed: () => onStory(s)),
+                        const SizedBox(height: 12),
+                      ],
                   ],
                 ),
               ),
 
-              // Pense-bête
+              // Pense-bête (notes du coffre)
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('PENSE-BÊTE', style: StoryText.mono(size: 11, color: C.textMuted, letterSpacing: 2)),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: C.primary.withValues(alpha: 0.12),
-                        border: Border.all(color: C.primary.withValues(alpha: 0.27)),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: Text('+ Ajouter', style: StoryText.mono(size: 10, color: C.primary)),
-                    )
+                    Text('PENSE-BÊTE',
+                        style: StoryText.mono(
+                            size: 11,
+                            color: C.textMuted,
+                            letterSpacing: 2)),
                   ],
                 ),
               ),
@@ -107,10 +170,28 @@ class HomeScreen extends ConsumerWidget {
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
                 child: Column(
                   children: [
-                    for (final n in quickNotes) ...[
-                      _QuickNoteTile(text: n.text, time: n.time),
-                      const SizedBox(height: 8),
-                    ],
+                    if (recentNotes.isEmpty)
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: C.surface,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.04)),
+                        ),
+                        child: Text(
+                          'Pas encore de note. Ajoute-en depuis le Coffre !',
+                          style: StoryText.sans(
+                              size: 13,
+                              color: C.textDim,
+                              style: FontStyle.italic),
+                        ),
+                      )
+                    else
+                      for (final n in recentNotes) ...[
+                        _QuickNoteTile(text: n.title, time: n.date),
+                        const SizedBox(height: 8),
+                      ],
                   ],
                 ),
               ),
@@ -125,19 +206,24 @@ class HomeScreen extends ConsumerWidget {
 class _HomeHeader extends StatelessWidget {
   final VoidCallback onMenu;
   final VoidCallback onSearch;
+  final String dateLabel;
 
-  const _HomeHeader({required this.onMenu, required this.onSearch});
+  const _HomeHeader({
+    required this.onMenu,
+    required this.onSearch,
+    required this.dateLabel,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Top row
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             GestureDetector(
+              behavior: HitTestBehavior.opaque,
               onTap: onMenu,
               child: SizedBox(
                 width: 44,
@@ -146,8 +232,10 @@ class _HomeHeader extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      _bar(), const SizedBox(height: 4),
-                      _bar(), const SizedBox(height: 4),
+                      _bar(),
+                      const SizedBox(height: 4),
+                      _bar(),
+                      const SizedBox(height: 4),
                       _bar(),
                     ],
                   ),
@@ -156,7 +244,9 @@ class _HomeHeader extends StatelessWidget {
             ),
             Column(
               children: [
-                Text('MERCREDI · 23 AVR', style: StoryText.mono(size: 10, color: C.primary, letterSpacing: 3)),
+                Text(dateLabel,
+                    style: StoryText.mono(
+                        size: 10, color: C.primary, letterSpacing: 3)),
               ],
             ),
             Container(
@@ -164,43 +254,50 @@ class _HomeHeader extends StatelessWidget {
               height: 44,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: LinearGradient(colors: [C.primary.withValues(alpha: 0.27), C.accent.withValues(alpha: 0.27)]),
-                border: Border.all(color: C.primary.withValues(alpha: 0.27), width: 1.5),
+                gradient: LinearGradient(colors: [
+                  C.primary.withValues(alpha: 0.27),
+                  C.accent.withValues(alpha: 0.27)
+                ]),
+                border: Border.all(
+                    color: C.primary.withValues(alpha: 0.27), width: 1.5),
               ),
-              child: const Center(child: Text('◉', style: TextStyle(fontSize: 20, color: C.textMuted))),
+              child: const Center(
+                  child: Text('◉',
+                      style: TextStyle(fontSize: 20, color: C.textMuted))),
             ),
           ],
         ),
         const SizedBox(height: 14),
-        Text('Bonjour,', style: StoryText.serif(size: 26, weight: FontWeight.w700)),
-        Text('Écrivain ✦', style: StoryText.serif(size: 26, weight: FontWeight.w400, color: C.textMuted, style: FontStyle.italic)),
+        Text('Bonjour,',
+            style: StoryText.serif(size: 26, weight: FontWeight.w700)),
+        Text('Écrivain ✦',
+            style: StoryText.serif(
+                size: 26,
+                weight: FontWeight.w400,
+                color: C.textMuted,
+                style: FontStyle.italic)),
         const SizedBox(height: 16),
 
-        // Search bar
         GestureDetector(
           onTap: onSearch,
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
             decoration: BoxDecoration(
               color: C.surface,
               borderRadius: BorderRadius.circular(999),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+              border:
+                  Border.all(color: Colors.white.withValues(alpha: 0.06)),
             ),
             child: Row(
               children: [
-                const Icon(Icons.search_rounded, size: 18, color: C.textMuted),
+                const Icon(Icons.search_rounded,
+                    size: 18, color: C.textMuted),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: Text('Rechercher dans StoryBlocks…', style: StoryText.sans(size: 14, color: C.textDim)),
+                  child: Text('Rechercher dans StoryBlocks…',
+                      style: StoryText.sans(size: 14, color: C.textDim)),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: C.surface2,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text('⌘F', style: StoryText.mono(size: 10, color: C.textDim)),
-                )
               ],
             ),
           ),
@@ -209,7 +306,11 @@ class _HomeHeader extends StatelessWidget {
     );
   }
 
-  Widget _bar() => Container(width: 18, height: 2, decoration: BoxDecoration(color: C.primary, borderRadius: BorderRadius.circular(1)));
+  Widget _bar() => Container(
+      width: 18,
+      height: 2,
+      decoration:
+          BoxDecoration(color: C.primary, borderRadius: BorderRadius.circular(1)));
 }
 
 class _StatTile extends StatelessWidget {
@@ -233,7 +334,10 @@ class _StatTile extends StatelessWidget {
           Positioned(
             right: -4,
             bottom: -10,
-            child: Text('◈', style: TextStyle(fontSize: 36, color: Colors.white.withValues(alpha: 0.06))),
+            child: Text('◈',
+                style: TextStyle(
+                    fontSize: 36,
+                    color: Colors.white.withValues(alpha: 0.06))),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -271,10 +375,14 @@ class _QuickNoteTile extends StatelessWidget {
             width: 6,
             height: 6,
             margin: const EdgeInsets.only(top: 5),
-            decoration: BoxDecoration(color: C.secondary, borderRadius: BorderRadius.circular(3)),
+            decoration: BoxDecoration(
+                color: C.secondary, borderRadius: BorderRadius.circular(3)),
           ),
           const SizedBox(width: 12),
-          Expanded(child: Text(text, style: StoryText.sans(size: 13, color: C.text, weight: FontWeight.w400))),
+          Expanded(
+              child: Text(text,
+                  style: StoryText.sans(
+                      size: 13, color: C.text, weight: FontWeight.w400))),
           const SizedBox(width: 10),
           Text(time, style: StoryText.mono(size: 10, color: C.textDim)),
         ],

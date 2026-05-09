@@ -1,27 +1,41 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/story_tokens.dart';
 import '../../core/theme/story_text_styles.dart';
+import '../../models/coffre_item.dart';
+import '../../state/coffre_provider.dart';
+import '../../state/story_provider.dart';
 import '../../widgets/backgrounds/grid_bg.dart';
 import '../../widgets/backgrounds/mesh_blobs.dart';
 import '../atelier/widgets/ham_btn.dart';
 import 'widgets/progress_ring.dart';
 
-class ProfilScreen extends StatelessWidget {
+class ProfilScreen extends ConsumerWidget {
   final VoidCallback onMenu;
 
   const ProfilScreen({super.key, required this.onMenu});
 
   @override
-  Widget build(BuildContext context) {
-    // Mock stats (tu brancheras plus tard sur du vrai state)
-    const projects = 12;
-    const blocks = 147;
-    const notes = 38;
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Stats DYNAMIQUES depuis Hive
+    final stories = ref.watch(storyProvider);
+    final coffre = ref.watch(coffreProvider);
 
-    const level = 3;
-    const xp = 680;
-    const nextXp = 1000;
-    final progress = xp / nextXp;
+    final projects = stories.length;
+    final blocks = stories.fold<int>(0, (s, st) => s + st.blocks.length);
+    final notes =
+        coffre.where((i) => i.type == CoffreItemType.note).length;
+
+    // XP basé sur l'activité réelle
+    final xp = (projects * 50) + (blocks * 5) + (notes * 10);
+    final level = (xp ~/ 200) + 1;
+    final nextXp = level * 200;
+    final progress = nextXp == 0 ? 0.0 : (xp % 200) / 200.0;
+
+    final avgProjectProgress = stories.isEmpty
+        ? 0.0
+        : stories.map((s) => s.progress).reduce((a, b) => a + b) /
+            (stories.length * 100.0);
 
     final badges = const [
       _Badge('⚡', 'Éclair', '10 jours actifs'),
@@ -139,11 +153,11 @@ class ProfilScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(color: C.accent.withValues(alpha: 0.12)),
                         ),
-                        child: const Center(
+                        child: Center(
                           child: ProgressRing(
-                            progress: 0.68,
+                            progress: avgProjectProgress,
                             label: 'PROJET',
-                            value: '68%',
+                            value: '${(avgProjectProgress * 100).round()}%',
                             color: C.accent,
                           ),
                         ),
@@ -152,11 +166,11 @@ class ProfilScreen extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
-                        children: const [
+                        children: [
                           _MiniStat(n: '$projects', label: 'Projets', color: C.primary),
-                          SizedBox(height: 10),
+                          const SizedBox(height: 10),
                           _MiniStat(n: '$blocks', label: 'Blocs', color: C.secondary),
-                          SizedBox(height: 10),
+                          const SizedBox(height: 10),
                           _MiniStat(n: '$notes', label: 'Notes', color: C.green),
                         ],
                       ),

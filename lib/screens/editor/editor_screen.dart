@@ -1,26 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/constants/story_tokens.dart';
 import '../../core/theme/story_text_styles.dart';
 import '../../models/assembled_block.dart';
 import '../../models/story.dart';
+import '../../state/story_provider.dart';
 import '../../widgets/backgrounds/grid_bg.dart';
 import '../../widgets/backgrounds/mesh_blobs.dart';
 import '../../widgets/chips/block_chip.dart';
 import '../../models/block_type.dart';
 
-class EditorScreen extends StatefulWidget {
+class EditorScreen extends ConsumerStatefulWidget {
   final Story story;
 
   const EditorScreen({super.key, required this.story});
 
   @override
-  State<EditorScreen> createState() => _EditorScreenState();
+  ConsumerState<EditorScreen> createState() => _EditorScreenState();
 }
 
-class _EditorScreenState extends State<EditorScreen> {
+class _EditorScreenState extends ConsumerState<EditorScreen> {
   late List<AssembledBlock> _blocks;
   late List<TextEditingController> _controllers;
+  late TextEditingController _titleController;
+  late TextEditingController _hookController;
 
   @override
   void initState() {
@@ -29,6 +33,8 @@ class _EditorScreenState extends State<EditorScreen> {
     _controllers = [
       for (final b in _blocks) TextEditingController(text: b.value),
     ];
+    _titleController = TextEditingController(text: widget.story.title);
+    _hookController = TextEditingController(text: widget.story.hook);
   }
 
   @override
@@ -36,16 +42,30 @@ class _EditorScreenState extends State<EditorScreen> {
     for (final c in _controllers) {
       c.dispose();
     }
+    _titleController.dispose();
+    _hookController.dispose();
     super.dispose();
   }
 
-  void _saveAndClose() {
+  Future<void> _saveAndClose() async {
     final updatedBlocks = <AssembledBlock>[
       for (var i = 0; i < _blocks.length; i++)
         _blocks[i].copyWith(value: _controllers[i].text.trim()),
     ];
 
-    final updatedStory = widget.story.copyWith(blocks: updatedBlocks);
+    final updatedStory = widget.story.copyWith(
+      title: _titleController.text.trim().isEmpty
+          ? widget.story.title
+          : _titleController.text.trim(),
+      blocks: updatedBlocks,
+      hook: _hookController.text.trim(),
+      lastEdit: 'à l\'instant',
+    );
+
+    // Sauvegarde dans Hive via le provider
+    await ref.read(storyProvider.notifier).updateStory(updatedStory);
+
+    if (!mounted) return;
     Navigator.pop(context, updatedStory);
   }
 
@@ -54,10 +74,14 @@ class _EditorScreenState extends State<EditorScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Supprimer le bloc ?'),
-        content: Text('Supprimer “${_blocks[index].type.label}” ?'),
+        content: Text('Supprimer "${_blocks[index].type.label}" ?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annuler')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Supprimer')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Annuler')),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Supprimer')),
         ],
       ),
     );
@@ -77,7 +101,6 @@ class _EditorScreenState extends State<EditorScreen> {
         children: [
           IgnorePointer(child: const GridBg(opacity: 0.25)),
           IgnorePointer(child: const MeshBlobs(warm: true)),
-
           Positioned.fill(
             child: ListView(
               padding: const EdgeInsets.only(bottom: 28),
@@ -96,16 +119,19 @@ class _EditorScreenState extends State<EditorScreen> {
                           decoration: BoxDecoration(
                             color: C.surface,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+                            border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.06)),
                           ),
-                          child: const Icon(Icons.arrow_back_rounded, color: C.textMuted),
+                          child: const Icon(Icons.arrow_back_rounded,
+                              color: C.textMuted),
                         ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           'ÉDITEUR',
-                          style: StoryText.mono(size: 10, color: C.textDim, letterSpacing: 2),
+                          style: StoryText.mono(
+                              size: 10, color: C.textDim, letterSpacing: 2),
                           textAlign: TextAlign.center,
                         ),
                       ),
@@ -114,25 +140,86 @@ class _EditorScreenState extends State<EditorScreen> {
                         style: FilledButton.styleFrom(
                           backgroundColor: C.text,
                           foregroundColor: C.bg,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 12),
                         ),
                         onPressed: _saveAndClose,
-                        child: Text('Enregistrer', style: StoryText.mono(size: 10, letterSpacing: 1.2)),
+                        child: Text('Enregistrer',
+                            style:
+                                StoryText.mono(size: 10, letterSpacing: 1.2)),
                       ),
                     ],
                   ),
                 ),
 
+                // Titre éditable
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
-                  child: Text(widget.story.title, style: StoryText.serif(size: 24, weight: FontWeight.w800)),
+                  child: TextField(
+                    controller: _titleController,
+                    style: StoryText.serif(size: 24, weight: FontWeight.w800),
+                    decoration: InputDecoration(
+                      hintText: 'Titre de l\'histoire',
+                      hintStyle:
+                          StoryText.serif(size: 24, color: C.textDim),
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ),
                 ),
+
+                // Amorce éditable
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: C.surface,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                          color: C.accent.withValues(alpha: 0.18)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('✦ AMORCE',
+                            style: StoryText.mono(
+                                size: 10,
+                                color: C.accent,
+                                letterSpacing: 2.2)),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: _hookController,
+                          minLines: 3,
+                          maxLines: 8,
+                          style: StoryText.serif(
+                                  size: 13, style: FontStyle.italic)
+                              .copyWith(height: 1.7),
+                          decoration: InputDecoration(
+                            hintText: 'Saisis ou colle ici l\'amorce…',
+                            hintStyle: StoryText.sans(
+                                size: 13, color: C.textDim),
+                            border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
                   child: Text(
                     'Blocs · ${_blocks.length}',
-                    style: StoryText.mono(size: 10, color: C.textDim, letterSpacing: 2),
+                    style: StoryText.mono(
+                        size: 10, color: C.textDim, letterSpacing: 2),
                   ),
                 ),
 
@@ -141,7 +228,9 @@ class _EditorScreenState extends State<EditorScreen> {
                   child: Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: [for (final b in _blocks) BlockChip(type: b.type)],
+                    children: [
+                      for (final b in _blocks) BlockChip(type: b.type)
+                    ],
                   ),
                 ),
 
@@ -173,7 +262,8 @@ class _EditorScreenState extends State<EditorScreen> {
                         decoration: BoxDecoration(
                           color: C.surface,
                           borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+                          border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.06)),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -184,13 +274,17 @@ class _EditorScreenState extends State<EditorScreen> {
                                 IconButton(
                                   tooltip: 'Supprimer',
                                   onPressed: () => _confirmDelete(index),
-                                  icon: const Icon(Icons.delete_outline_rounded, color: C.textMuted),
+                                  icon: const Icon(
+                                      Icons.delete_outline_rounded,
+                                      color: C.textMuted),
                                 ),
                                 ReorderableDragStartListener(
                                   index: index,
                                   child: const Padding(
-                                    padding: EdgeInsets.symmetric(horizontal: 6),
-                                    child: Icon(Icons.drag_handle_rounded, color: C.textMuted),
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 6),
+                                    child: Icon(Icons.drag_handle_rounded,
+                                        color: C.textMuted),
                                   ),
                                 ),
                               ],
@@ -203,18 +297,25 @@ class _EditorScreenState extends State<EditorScreen> {
                               decoration: InputDecoration(
                                 hintText: block.type.desc,
                                 filled: true,
-                                fillColor: Colors.white.withValues(alpha: 0.03),
+                                fillColor:
+                                    Colors.white.withValues(alpha: 0.03),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.06)),
+                                  borderSide: BorderSide(
+                                      color: Colors.white
+                                          .withValues(alpha: 0.06)),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.06)),
+                                  borderSide: BorderSide(
+                                      color: Colors.white
+                                          .withValues(alpha: 0.06)),
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(color: block.type.color.withValues(alpha: 0.6)),
+                                  borderSide: BorderSide(
+                                      color: block.type.color
+                                          .withValues(alpha: 0.6)),
                                 ),
                               ),
                               style: StoryText.sans(size: 13, color: C.text),

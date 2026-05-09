@@ -1,6 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 
-enum CoffreItemType { projet, note, idee }
+part 'coffre_item.g.dart';
+
+@HiveType(typeId: 3)
+enum CoffreItemType {
+  @HiveField(0)
+  projet,
+  @HiveField(1)
+  note,
+  @HiveField(2)
+  idee,
+}
 
 @immutable
 class CoffreItem {
@@ -23,4 +34,26 @@ class CoffreItem {
     required this.pinned,
     required this.color,
   });
+
+  CoffreItem copyWith({
+    int? id,
+    CoffreItemType? type,
+    String? icon,
+    String? title,
+    List<String>? tags,
+    String? date,
+    bool? pinned,
+    Color? color,
+  }) {
+    return CoffreItem(
+      id: id ?? this.id,
+      type: type ?? this.type,
+      icon: icon ?? this.icon,
+      title: title ?? this.title,
+      tags: tags ?? this.tags,
+      date: date ?? this.date,
+      pinned: pinned ?? this.pinned,
+      color: color ?? this.color,
+    );
+  }
 }

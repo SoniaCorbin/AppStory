@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import '../../core/constants/story_tokens.dart';
 import '../../core/routing/routes.dart';
 import '../../core/theme/story_text_styles.dart';
@@ -18,9 +19,24 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(milliseconds: 400), () => setState(() => phase = 1));
-    Future.delayed(const Duration(milliseconds: 1200), () => setState(() => phase = 2));
-    Future.delayed(const Duration(milliseconds: 2200), () => setState(() => phase = 3));
+    Future.delayed(
+        const Duration(milliseconds: 400), () => setState(() => phase = 1));
+    Future.delayed(
+        const Duration(milliseconds: 1200), () => setState(() => phase = 2));
+    Future.delayed(
+        const Duration(milliseconds: 2200), () => setState(() => phase = 3));
+  }
+
+  void _enterApp() {
+    // Vérifie si l'utilisateur a déjà fait l'onboarding
+    final settings = Hive.box('settings');
+    final onboarded = settings.get('onboarded', defaultValue: false) as bool;
+
+    if (onboarded) {
+      Navigator.of(context).pushReplacementNamed(Routes.shell);
+    } else {
+      Navigator.of(context).pushReplacementNamed(Routes.onboarding);
+    }
   }
 
   @override
@@ -39,7 +55,8 @@ class _SplashScreenState extends State<SplashScreen> {
                   if (phase >= 2) ...[
                     Text(
                       '◈ LABORATOIRE CRÉATIF',
-                      style: StoryText.mono(size: 11, color: C.primary, letterSpacing: 4),
+                      style: StoryText.mono(
+                          size: 11, color: C.primary, letterSpacing: 4),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 10),
@@ -48,14 +65,23 @@ class _SplashScreenState extends State<SplashScreen> {
                         style: StoryText.serif(size: 42, weight: FontWeight.w900),
                         children: [
                           const TextSpan(text: 'Story'),
-                          TextSpan(text: 'Blocks', style: StoryText.serif(size: 42, weight: FontWeight.w900, color: C.primary)),
+                          TextSpan(
+                              text: 'Blocks',
+                              style: StoryText.serif(
+                                  size: 42,
+                                  weight: FontWeight.w900,
+                                  color: C.primary)),
                         ],
                       ),
                     ),
                     const SizedBox(height: 6),
                     Text(
                       "De l'étincelle à l'histoire",
-                      style: StoryText.sans(size: 13, color: C.textMuted, style: FontStyle.italic, weight: FontWeight.w300),
+                      style: StoryText.sans(
+                          size: 13,
+                          color: C.textMuted,
+                          style: FontStyle.italic,
+                          weight: FontWeight.w300),
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -65,10 +91,11 @@ class _SplashScreenState extends State<SplashScreen> {
                       style: FilledButton.styleFrom(
                         backgroundColor: C.primary,
                         foregroundColor: C.bg,
-                        padding: const EdgeInsets.symmetric(horizontal: 44, vertical: 16),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 44, vertical: 16),
                         shape: const StadiumBorder(),
                       ),
-                      onPressed: () => Navigator.of(context).pushReplacementNamed(Routes.onboarding),
+                      onPressed: _enterApp,
                       child: const Text("Entrer dans l'Atelier →"),
                     ),
                 ],
@@ -80,7 +107,8 @@ class _SplashScreenState extends State<SplashScreen> {
             left: 0,
             right: 0,
             child: Center(
-              child: Text('v1.0 · beta', style: StoryText.mono(size: 10, color: C.textDim)),
+              child: Text('v1.0 · beta',
+                  style: StoryText.mono(size: 10, color: C.textDim)),
             ),
           ),
         ],
