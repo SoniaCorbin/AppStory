@@ -49,6 +49,7 @@ class CoffreNotifier extends StateNotifier<List<CoffreItem>> {
   static CoffreItem buildNew({
     required CoffreItemType type,
     required String title,
+    List<String> tags = const [],
   }) {
     final now = DateTime.now();
     final id = now.millisecondsSinceEpoch;
@@ -81,7 +82,7 @@ class CoffreNotifier extends StateNotifier<List<CoffreItem>> {
       type: type,
       icon: icon,
       title: title,
-      tags: const [],
+      tags: tags,
       date: dateStr,
       pinned: false,
       color: color,

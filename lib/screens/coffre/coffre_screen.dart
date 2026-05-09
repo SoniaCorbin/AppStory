@@ -391,6 +391,7 @@ class _CoffreScreenState extends ConsumerState<CoffreScreen> {
 
   void _openAddSheet(BuildContext context) {
     final titleCtrl = TextEditingController();
+    final tagsCtrl = TextEditingController();
     CoffreItemType selectedType = CoffreItemType.note;
 
     showModalBottomSheet(
@@ -499,6 +500,29 @@ class _CoffreScreenState extends ConsumerState<CoffreScreen> {
                       ),
                     ),
                     const SizedBox(height: 18),
+
+                    // Tags (separes par des virgules)
+                    Text('TAGS',
+                      style: StoryText.mono(
+                        size: 10,
+                        color: C.textDim,
+                        letterSpacing: 2)),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: tagsCtrl,
+                      decoration: InputDecoration(
+                        hintText: 'thriller, paris, mystere',
+                        helperText: 'Separes par des virgules',
+                        helperStyle: StoryText.sans(size: 10, color: C.textDim),
+                        filled: true,
+                        fillColor: C.surface2,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 18),
                     SizedBox(
                       width: double.infinity,
                       child: FilledButton(
@@ -512,9 +536,16 @@ class _CoffreScreenState extends ConsumerState<CoffreScreen> {
                         onPressed: () {
                           final title = titleCtrl.text.trim();
                           if (title.isEmpty) return;
+                          // Parse les tags (separes par des virgules), trim, enleve vides)
+                          final tags = tagsCtrl.text
+                              .split(',')
+                              .map((t) => t.trim())
+                              .where((t) => t.isNotEmpty)
+                              .toList();
                           final item = CoffreNotifier.buildNew(
                             type: selectedType,
                             title: title,
+                            tags: tags,
                           );
                           ref.read(coffreProvider.notifier).addItem(item);
                           Navigator.pop(ctx);
