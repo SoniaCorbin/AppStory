@@ -261,7 +261,7 @@ class _HomeHeader extends StatelessWidget {
                 border: Border.all(
                     color: C.primary.withValues(alpha: 0.27), width: 1.5),
               ),
-              child: const Center(
+              child: Center(
                   child: Text('◉',
                       style: TextStyle(fontSize: 20, color: C.textMuted))),
             ),
@@ -291,7 +291,7 @@ class _HomeHeader extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const Icon(Icons.search_rounded,
+                Icon(Icons.search_rounded,
                     size: 18, color: C.textMuted),
                 const SizedBox(width: 10),
                 Expanded(

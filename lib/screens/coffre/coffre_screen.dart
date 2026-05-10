@@ -111,7 +111,7 @@ class _CoffreScreenState extends ConsumerState<CoffreScreen> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.search_rounded,
+                      Icon(Icons.search_rounded,
                           size: 18, color: C.textMuted),
                       const SizedBox(width: 10),
                       Expanded(
@@ -134,7 +134,7 @@ class _CoffreScreenState extends ConsumerState<CoffreScreen> {
                             _searchCtrl.clear();
                             setState(() => search = '');
                           },
-                          child: const Icon(Icons.close_rounded,
+                          child: Icon(Icons.close_rounded,
                               size: 18, color: C.textDim),
                         ),
                     ],
@@ -307,9 +307,9 @@ class _CoffreScreenState extends ConsumerState<CoffreScreen> {
       builder: (ctx) {
         return Container(
           padding: const EdgeInsets.all(20),
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             color: C.surface,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
           ),
           child: SafeArea(
             child: Column(
@@ -405,9 +405,9 @@ class _CoffreScreenState extends ConsumerState<CoffreScreen> {
                 bottom: MediaQuery.of(ctx).viewInsets.bottom),
             child: Container(
               padding: const EdgeInsets.all(20),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: C.surface,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
               ),
               child: SafeArea(
                 child: Column(

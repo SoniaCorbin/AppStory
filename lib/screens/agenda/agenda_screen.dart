@@ -108,7 +108,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                           border: Border.all(
                               color: Colors.white.withValues(alpha: 0.06)),
                         ),
-                        child: const Icon(Icons.chevron_left_rounded,
+                        child: Icon(Icons.chevron_left_rounded,
                             color: C.textMuted),
                       ),
                     ),
@@ -132,7 +132,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                           border: Border.all(
                               color: Colors.white.withValues(alpha: 0.06)),
                         ),
-                        child: const Icon(Icons.chevron_right_rounded,
+                        child: Icon(Icons.chevron_right_rounded,
                             color: C.textMuted),
                       ),
                     ),
@@ -281,10 +281,10 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                 bottom: MediaQuery.of(ctx).viewInsets.bottom),
             child: Container(
               padding: const EdgeInsets.all(20),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: C.surface,
                 borderRadius:
-                    BorderRadius.vertical(top: Radius.circular(18)),
+                    const BorderRadius.vertical(top: Radius.circular(18)),
               ),
               child: SafeArea(
                 child: Column(
@@ -351,7 +351,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                               ),
                               child: Row(
                                 children: [
-                                  const Icon(Icons.calendar_today_rounded,
+                                  Icon(Icons.calendar_today_rounded,
                                       size: 16, color: C.textMuted),
                                   const SizedBox(width: 10),
                                   Text(
@@ -385,7 +385,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                               ),
                               child: Row(
                                 children: [
-                                  const Icon(Icons.access_time_rounded,
+                                  Icon(Icons.access_time_rounded,
                                       size: 16, color: C.textMuted),
                                   const SizedBox(width: 10),
                                   Text(

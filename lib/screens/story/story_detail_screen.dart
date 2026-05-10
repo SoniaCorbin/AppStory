@@ -49,14 +49,14 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
                     children: [
                       IconButton(
                         onPressed: () => Navigator.of(context).pop(),
-                        icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: C.textDim),
+                        icon: Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: C.textDim),
                       ),
                       const Spacer(),
                       IconButton(
                         onPressed: () {
                           // Tu peux ajouter un menu contextuel ici si tu veux
                         },
-                        icon: const Icon(Icons.more_horiz_rounded, color: C.textDim),
+                        icon: Icon(Icons.more_horiz_rounded, color: C.textDim),
                       ),
                     ],
                   ),

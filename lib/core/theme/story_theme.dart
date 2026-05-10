@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import '../constants/story_tokens.dart';
 
 ThemeData buildStoryTheme() {
-  final base = ThemeData.dark(useMaterial3: true);
+  final base = C.isDark
+      ? ThemeData.dark(useMaterial3: true)
+      : ThemeData.light(useMaterial3: true);
 
   return base.copyWith(
     scaffoldBackgroundColor: C.bg,

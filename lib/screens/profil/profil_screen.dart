@@ -5,6 +5,7 @@ import '../../core/theme/story_text_styles.dart';
 import '../../models/coffre_item.dart';
 import '../../state/coffre_provider.dart';
 import '../../state/story_provider.dart';
+import '../../state/theme_provider.dart';
 import '../../widgets/backgrounds/grid_bg.dart';
 import '../../widgets/backgrounds/mesh_blobs.dart';
 import '../atelier/widgets/ham_btn.dart';
@@ -206,24 +207,66 @@ class ProfilScreen extends ConsumerWidget {
                 ),
               ),
 
-              // Actions (placeholders)
+              // Actions
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
                 child: Column(
                   children: [
-                    _ActionRow(
-                      title: 'Exporter mes données',
-                      subtitle: 'JSON / texte (à venir)',
-                      onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Export (à venir)')),
+                    // Toggle thème clair/sombre
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 14),
+                      decoration: BoxDecoration(
+                        color: C.surface,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.06)),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            ref.watch(themeProvider)
+                                ? Icons.dark_mode_rounded
+                                : Icons.light_mode_rounded,
+                            color: C.primary,
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Thème',
+                                    style: StoryText.sans(
+                                        size: 14,
+                                        weight: FontWeight.w600)),
+                                const SizedBox(height: 4),
+                                Text(
+                                    ref.watch(themeProvider)
+                                        ? 'Sombre'
+                                        : 'Clair',
+                                    style: StoryText.sans(
+                                        size: 12,
+                                        color: C.textMuted,
+                                        style: FontStyle.italic)),
+                              ],
+                            ),
+                          ),
+                          Switch(
+                            value: ref.watch(themeProvider),
+                            onChanged: (_) => ref
+                                .read(themeProvider.notifier)
+                                .toggle(),
+                            activeColor: C.primary,
+                          ),
+                        ],
                       ),
                     ),
                     const SizedBox(height: 10),
                     _ActionRow(
-                      title: 'Préférences',
-                      subtitle: 'Thème, police, etc.',
+                      title: 'Exporter mes données',
+                      subtitle: 'À venir',
                       onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Préférences (à venir)')),
+                        const SnackBar(content: Text('Export (à venir)')),
                       ),
                     ),
                   ],
@@ -347,7 +390,7 @@ class _ActionRow extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right_rounded, color: C.textMuted),
+            Icon(Icons.chevron_right_rounded, color: C.textMuted),
           ],
         ),
       ),

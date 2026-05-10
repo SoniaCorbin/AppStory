@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/story_tokens.dart';
 import '../../models/story.dart';
 import '../../state/story_provider.dart';
+import '../../state/theme_provider.dart';
 import '../profil/profil_screen.dart';
 import '../agenda/agenda_screen.dart';
 import '../editor/editor_screen.dart';
@@ -61,6 +62,9 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Force le rebuild quand le thème change (sinon la navbar reste figée)
+    ref.watch(themeProvider);
+
     final Widget content;
 
     if (active == NavTab.home) {
@@ -121,7 +125,7 @@ class _PlaceholderTab extends StatelessWidget {
     return Center(
       child: Text(
         title,
-        style: const TextStyle(
+        style: TextStyle(
           color: C.text,
           fontSize: 24,
           fontWeight: FontWeight.w700,

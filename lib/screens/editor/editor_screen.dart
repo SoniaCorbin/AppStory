@@ -122,7 +122,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                             border: Border.all(
                                 color: Colors.white.withValues(alpha: 0.06)),
                           ),
-                          child: const Icon(Icons.arrow_back_rounded,
+                          child: Icon(Icons.arrow_back_rounded,
                               color: C.textMuted),
                         ),
                       ),
@@ -274,15 +274,15 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                                 IconButton(
                                   tooltip: 'Supprimer',
                                   onPressed: () => _confirmDelete(index),
-                                  icon: const Icon(
+                                  icon: Icon(
                                       Icons.delete_outline_rounded,
                                       color: C.textMuted),
                                 ),
                                 ReorderableDragStartListener(
                                   index: index,
-                                  child: const Padding(
+                                  child: Padding(
                                     padding:
-                                        EdgeInsets.symmetric(horizontal: 6),
+                                        const EdgeInsets.symmetric(horizontal: 6),
                                     child: Icon(Icons.drag_handle_rounded,
                                         color: C.textMuted),
                                   ),
