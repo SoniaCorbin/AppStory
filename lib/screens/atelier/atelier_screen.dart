@@ -4,6 +4,7 @@ import '../../core/constants/story_tokens.dart';
 import '../../core/theme/story_text_styles.dart';
 import '../../models/assembled_block.dart';
 import '../../models/block_type.dart';
+import '../../state/ai_settings_provider.dart';
 import '../../state/atelier_provider.dart';
 import '../../state/library_provider.dart';
 import '../../widgets/backgrounds/grid_bg.dart';
@@ -27,6 +28,17 @@ class AtelierScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final st = ref.watch(atelierProvider);
     final ctrl = ref.read(atelierProvider.notifier);
+    final aiOn = ref.watch(aiSettingsProvider.select(
+        (s) => s.enabled && s.hasApiKey));
+
+    // Affiche l'erreur IA en SnackBar si présente
+    ref.listen<String?>(atelierProvider.select((s) => s.error), (prev, next) {
+      if (next != null && next.isNotEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('⚠ $next')),
+        );
+      }
+    });
 
     return Stack(
       children: [
@@ -46,9 +58,39 @@ class AtelierScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     HamBtn(onMenu: onMenu),
-                    Text('⚗ LABORATOIRE',
-                        style: StoryText.mono(
-                            size: 10, color: C.accent, letterSpacing: 3)),
+                    Row(
+                      children: [
+                        Text('⚗ LABORATOIRE',
+                            style: StoryText.mono(
+                                size: 10,
+                                color: C.accent,
+                                letterSpacing: 3)),
+                        if (aiOn) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: C.accent.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(999),
+                              border: Border.all(
+                                  color: C.accent.withValues(alpha: 0.4)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.auto_awesome_rounded,
+                                    size: 10, color: C.accent),
+                                const SizedBox(width: 4),
+                                Text('IA',
+                                    style: StoryText.mono(
+                                        size: 9, color: C.accent)),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
                     const SizedBox(height: 6),
                     Text("L'Atelier",
                         style:

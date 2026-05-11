@@ -5,6 +5,7 @@ import '../../core/constants/story_tokens.dart';
 import '../../core/theme/story_text_styles.dart';
 import '../../models/coffre_item.dart';
 import '../../services/export_service.dart';
+import '../../state/ai_settings_provider.dart';
 import '../../state/coffre_provider.dart';
 import '../../state/story_provider.dart';
 import '../../state/theme_provider.dart';
@@ -264,6 +265,11 @@ class ProfilScreen extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: 10),
+
+                    // ============ MODE IA ============
+                    _AiModeCard(),
+                    const SizedBox(height: 10),
+
                     _ActionRow(
                       title: 'Exporter toutes mes histoires',
                       subtitle: '${stories.length} histoire${stories.length > 1 ? 's' : ''} en Markdown',
@@ -389,6 +395,294 @@ class _BadgeTile extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+/// Carte de configuration du Mode IA dans Profil.
+class _AiModeCard extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ai = ref.watch(aiSettingsProvider);
+    final ctrl = ref.read(aiSettingsProvider.notifier);
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: C.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: ai.enabled
+              ? C.accent.withValues(alpha: 0.40)
+              : Colors.white.withValues(alpha: 0.06),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.auto_awesome_rounded, color: C.accent),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Mode IA (Claude)',
+                        style: StoryText.sans(
+                            size: 14, weight: FontWeight.w600)),
+                    const SizedBox(height: 4),
+                    Text(
+                      ai.hasApiKey
+                          ? (ai.enabled
+                              ? 'Activé — Génération via Claude'
+                              : 'Désactivé — Génération locale')
+                          : 'Aucune clé API configurée',
+                      style: StoryText.sans(
+                          size: 12,
+                          color: C.textMuted,
+                          style: FontStyle.italic),
+                    ),
+                  ],
+                ),
+              ),
+              Switch(
+                value: ai.enabled && ai.hasApiKey,
+                onChanged: ai.hasApiKey
+                    ? (v) => ctrl.setEnabled(v)
+                    : null,
+                activeColor: C.accent,
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          if (ai.hasApiKey) ...[
+            Row(
+              children: [
+                Icon(Icons.key_rounded, size: 14, color: C.textMuted),
+                const SizedBox(width: 6),
+                Text('Clé : ${ai.apiKeyPreview}',
+                    style: StoryText.mono(size: 11, color: C.textMuted)),
+                const Spacer(),
+                TextButton(
+                  onPressed: () => _confirmClearKey(context, ref),
+                  style: TextButton.styleFrom(
+                    foregroundColor: const Color(0xFFFF4466),
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    minimumSize: const Size(0, 32),
+                  ),
+                  child: Text('Effacer',
+                      style: StoryText.sans(size: 11)),
+                ),
+                TextButton(
+                  onPressed: () => _openApiKeyDialog(context, ref),
+                  style: TextButton.styleFrom(
+                    foregroundColor: C.accent,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    minimumSize: const Size(0, 32),
+                  ),
+                  child:
+                      Text('Modifier', style: StoryText.sans(size: 11)),
+                ),
+              ],
+            ),
+          ] else ...[
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                style: FilledButton.styleFrom(
+                  backgroundColor: C.accent,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                ),
+                onPressed: () => _openApiKeyDialog(context, ref),
+                icon: const Icon(Icons.key_rounded, size: 18),
+                label: const Text('Configurer ma clé API Claude'),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '🔒 Ta clé est stockée dans le Keystore Android, jamais envoyée à personne d\'autre qu\'Anthropic.',
+              style: StoryText.sans(
+                  size: 10,
+                  color: C.textDim,
+                  style: FontStyle.italic),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Future<void> _openApiKeyDialog(BuildContext context, WidgetRef ref) async {
+    final ctrl = TextEditingController();
+    final result = await showDialog<String>(
+      context: context,
+      builder: (dialogCtx) {
+        bool obscure = false; // Démarre visible pour faciliter le collage
+        return StatefulBuilder(builder: (ctx, setS) {
+          return AlertDialog(
+            backgroundColor: C.surface,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16)),
+            title: Row(
+              children: [
+                Icon(Icons.auto_awesome_rounded,
+                    color: C.accent, size: 20),
+                const SizedBox(width: 10),
+                Text('Clé API Claude',
+                    style: StoryText.serif(
+                        size: 18, weight: FontWeight.w700)),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Récupère ta clé sur console.anthropic.com → API Keys',
+                  style: StoryText.sans(
+                      size: 12,
+                      color: C.textMuted,
+                      style: FontStyle.italic),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: ctrl,
+                  autofocus: true,
+                  obscureText: obscure,
+                  enableInteractiveSelection: true,
+                  contextMenuBuilder: (ctx, editableTextState) {
+                    return AdaptiveTextSelectionToolbar.editableText(
+                      editableTextState: editableTextState,
+                    );
+                  },
+                  style: StoryText.mono(size: 12),
+                  decoration: InputDecoration(
+                    hintText: 'sk-ant-...',
+                    filled: true,
+                    fillColor: C.surface2,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide.none,
+                    ),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                          obscure
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
+                          color: C.textMuted),
+                      onPressed: () => setS(() => obscure = !obscure),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                // Bouton explicite "Coller depuis le presse-papier"
+                Row(
+                  children: [
+                    OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: C.accent,
+                        side: BorderSide(
+                            color: C.accent.withValues(alpha: 0.4)),
+                        padding:
+                            const EdgeInsets.symmetric(horizontal: 12),
+                      ),
+                      onPressed: () async {
+                        final data = await Clipboard.getData(
+                            Clipboard.kTextPlain);
+                        final text = data?.text?.trim() ?? '';
+                        if (text.isEmpty) {
+                          ScaffoldMessenger.of(ctx).showSnackBar(
+                            const SnackBar(
+                                content: Text(
+                                    'Presse-papier vide')),
+                          );
+                          return;
+                        }
+                        ctrl.text = text;
+                        ctrl.selection = TextSelection.fromPosition(
+                            TextPosition(offset: text.length));
+                      },
+                      icon: const Icon(Icons.content_paste_rounded,
+                          size: 16),
+                      label: const Text('Coller'),
+                    ),
+                    const SizedBox(width: 8),
+                    TextButton(
+                      onPressed: () {
+                        ctrl.clear();
+                      },
+                      style: TextButton.styleFrom(
+                        foregroundColor: C.textMuted,
+                      ),
+                      child: const Text('Effacer'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogCtx),
+                child: Text('Annuler',
+                    style:
+                        StoryText.sans(size: 13, color: C.textMuted)),
+              ),
+              FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: C.accent,
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: () =>
+                    Navigator.pop(dialogCtx, ctrl.text.trim()),
+                child: const Text('Enregistrer'),
+              ),
+            ],
+          );
+        });
+      },
+    );
+
+    if (result != null && result.isNotEmpty) {
+      await ref.read(aiSettingsProvider.notifier).setApiKey(result);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('✓ Clé API enregistrée')),
+      );
+    }
+  }
+
+  Future<void> _confirmClearKey(BuildContext context, WidgetRef ref) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: C.surface,
+        title: Text('Effacer la clé API ?',
+            style: StoryText.serif(size: 16, weight: FontWeight.w700)),
+        content: Text(
+            'Cette action est irréversible. Tu pourras toujours en remettre une nouvelle.',
+            style: StoryText.sans(size: 13, color: C.textMuted)),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Annuler')),
+          FilledButton(
+            style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFFFF4466)),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Effacer'),
+          ),
+        ],
+      ),
+    );
+
+    if (ok == true) {
+      await ref.read(aiSettingsProvider.notifier).clearApiKey();
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('🗑 Clé effacée')),
+      );
+    }
   }
 }
 

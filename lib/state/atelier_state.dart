@@ -8,6 +8,7 @@ class AtelierState {
   final bool generated;
   final String story;
   final bool saved;
+  final String? error;
 
   const AtelierState({
     required this.assembled,
@@ -15,15 +16,18 @@ class AtelierState {
     required this.generated,
     required this.story,
     this.saved = false,
+    this.error,
   });
 
-  factory AtelierState.initial(List<AssembledBlock> initialBlocks) => AtelierState(
-    assembled: initialBlocks,
-    generating: false,
-    generated: false,
-    story: '',
-    saved: false,
-  );
+  factory AtelierState.initial(List<AssembledBlock> initialBlocks) =>
+      AtelierState(
+        assembled: initialBlocks,
+        generating: false,
+        generated: false,
+        story: '',
+        saved: false,
+        error: null,
+      );
 
   AtelierState copyWith({
     List<AssembledBlock>? assembled,
@@ -31,6 +35,7 @@ class AtelierState {
     bool? generated,
     String? story,
     bool? saved,
+    String? error,
   }) {
     return AtelierState(
       assembled: assembled ?? this.assembled,
@@ -38,6 +43,7 @@ class AtelierState {
       generated: generated ?? this.generated,
       story: story ?? this.story,
       saved: saved ?? this.saved,
+      error: error,
     );
   }
 }

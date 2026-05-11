@@ -7,6 +7,7 @@ import 'package:hive/hive.dart';
 /// - la stocke dans le Keystore Android (hardware-backed)
 class SecureStorageService {
   static const _hiveKeyName = 'storyblocks_hive_key_v1';
+  static const _apiKeyName = 'anthropic_api_key';
 
   // Options Android : utilise le Keystore + EncryptedSharedPreferences
   static const _options = AndroidOptions(
@@ -35,5 +36,22 @@ class SecureStorageService {
     // ignore: avoid_print
     print('[SecureStorage] 🆕 Nouvelle clé générée et sauvegardée');
     return newKey;
+  }
+
+  // ============== Clé API Anthropic ==============
+
+  /// Récupère la clé API Anthropic stockée.
+  static Future<String?> getApiKey() async {
+    return await _storage.read(key: _apiKeyName);
+  }
+
+  /// Stocke la clé API Anthropic dans le Keystore.
+  static Future<void> setApiKey(String key) async {
+    await _storage.write(key: _apiKeyName, value: key);
+  }
+
+  /// Efface la clé API Anthropic.
+  static Future<void> clearApiKey() async {
+    await _storage.delete(key: _apiKeyName);
   }
 }

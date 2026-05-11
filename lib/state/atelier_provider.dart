@@ -4,7 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/assembled_block.dart';
 import '../models/block_type.dart';
 import '../models/story.dart';
+import '../services/ai_service.dart';
+import '../services/secure_storage_service.dart';
 import '../services/story_generator.dart';
+import 'ai_settings_provider.dart';
 import 'atelier_state.dart';
 import 'story_provider.dart';
 
@@ -122,13 +125,39 @@ class AtelierController extends Notifier<AtelierState> {
 
   Future<void> generate() async {
     if (state.generating) return;
-    state = state.copyWith(generating: true, generated: false, story: '');
+    state = state.copyWith(
+        generating: true, generated: false, story: '', error: null);
 
-    // Petit délai pour l'effet "génération"
-    await Future.delayed(const Duration(milliseconds: 1200));
+    String generated;
+    final ai = ref.read(aiSettingsProvider);
 
-    // GÉNÉRATION DYNAMIQUE basée sur les blocs assemblés
-    final generated = StoryGenerator.generate(state.assembled);
+    if (ai.enabled && ai.hasApiKey) {
+      // Mode IA : appel à Claude
+      try {
+        final apiKey = await SecureStorageService.getApiKey();
+        if (apiKey == null || apiKey.isEmpty) {
+          throw Exception('Clé API introuvable');
+        }
+        generated = await AiService.generateHook(
+          blocks: state.assembled,
+          apiKey: apiKey,
+        );
+      } catch (e) {
+        // Fallback : on utilise la génération locale et on note l'erreur
+        generated = StoryGenerator.generate(state.assembled);
+        state = state.copyWith(
+          generating: false,
+          generated: true,
+          story: generated,
+          error: 'IA indisponible — amorce locale générée. ($e)',
+        );
+        return;
+      }
+    } else {
+      // Mode local : templates
+      await Future.delayed(const Duration(milliseconds: 1200));
+      generated = StoryGenerator.generate(state.assembled);
+    }
 
     state = state.copyWith(
       generating: false,
