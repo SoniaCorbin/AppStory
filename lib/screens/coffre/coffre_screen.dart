@@ -269,7 +269,7 @@ class _CoffreScreenState extends ConsumerState<CoffreScreen> {
         // FAB
         Positioned(
           right: 24,
-          bottom: 96,
+          bottom: 130,
           child: GestureDetector(
             onTap: () => _openAddSheet(context),
             child: Container(
@@ -410,10 +410,11 @@ class _CoffreScreenState extends ConsumerState<CoffreScreen> {
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
               ),
               child: SafeArea(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                     Center(
                       child: Container(
                         width: 44,
@@ -554,7 +555,8 @@ class _CoffreScreenState extends ConsumerState<CoffreScreen> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

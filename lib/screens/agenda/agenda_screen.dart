@@ -35,6 +35,14 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     selected = _dayOnly(now);
   }
 
+  String _shortMonth(int m) {
+    const names = [
+      'jan', 'fév', 'mar', 'avr', 'mai', 'juin',
+      'juil', 'aoû', 'sep', 'oct', 'nov', 'déc'
+    ];
+    return names[m - 1];
+  }
+
   String _monthLabel(DateTime m) {
     const names = [
       'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
@@ -56,6 +64,17 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     final todays =
         allEvents.where((e) => _dayOnly(e.date) == _dayOnly(selected)).toList()
           ..sort((a, b) => a.time.compareTo(b.time));
+
+    // Tous les événements à venir (à partir d'aujourd'hui), triés par date+heure
+    final todayDay = _dayOnly(DateTime.now());
+    final upcoming = allEvents
+        .where((e) => !_dayOnly(e.date).isBefore(todayDay))
+        .toList()
+      ..sort((a, b) {
+        final dc = a.date.compareTo(b.date);
+        if (dc != 0) return dc;
+        return a.time.compareTo(b.time);
+      });
 
     return Stack(
       children: [
@@ -192,7 +211,9 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                               color: Colors.white.withValues(alpha: 0.06)),
                         ),
                         child: Text(
-                          'Aucun événement ce jour-là.',
+                          marked.isEmpty
+                              ? 'Aucun événement. Clique sur + pour en ajouter !'
+                              : 'Aucun événement ce jour-là. Regarde les pastilles 🟢 sur le calendrier ou scrolle vers le bas pour voir "À venir".',
                           style: StoryText.sans(
                               size: 13,
                               color: C.textDim,
@@ -220,6 +241,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                                 .read(agendaProvider.notifier)
                                 .deleteEvent(e.id),
                             child: GestureDetector(
+                              onTap: () => _openEditSheet(context, e),
                               onLongPress: () => ref
                                   .read(agendaProvider.notifier)
                                   .toggleComplete(e.id),
@@ -228,6 +250,97 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                           ),
                       ]),
               ),
+
+              // SECTION "À VENIR" — tous les prochains événements
+              if (upcoming.isNotEmpty) ...[
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 10),
+                  child: Row(
+                    children: [
+                      Text('◷ À VENIR',
+                          style: StoryText.mono(
+                              size: 10,
+                              color: C.green,
+                              letterSpacing: 2)),
+                      const SizedBox(width: 8),
+                      Text('· ${upcoming.length}',
+                          style: StoryText.mono(
+                              size: 10, color: C.textDim)),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                  child: Column(
+                    children: [
+                      for (final e in upcoming.take(10))
+                        GestureDetector(
+                          onTap: () => setState(
+                              () => selected = _dayOnly(e.date)),
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: C.surface,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                  color: Colors.white
+                                      .withValues(alpha: 0.06)),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 44,
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: C.green.withValues(alpha: 0.13),
+                                    borderRadius:
+                                        BorderRadius.circular(8),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Text('${e.date.day}',
+                                          style: StoryText.serif(
+                                              size: 18,
+                                              weight: FontWeight.w800,
+                                              color: C.green)),
+                                      Text(
+                                          _shortMonth(e.date.month),
+                                          style: StoryText.mono(
+                                              size: 9,
+                                              color: C.green)),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(e.title,
+                                          style: StoryText.sans(
+                                              size: 14,
+                                              weight: FontWeight.w600)),
+                                      Text(e.time,
+                                          style: StoryText.mono(
+                                              size: 10,
+                                              color: C.textDim)),
+                                    ],
+                                  ),
+                                ),
+                                Text(e.color,
+                                    style:
+                                        const TextStyle(fontSize: 16)),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -235,7 +348,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
         // FAB
         Positioned(
           right: 24,
-          bottom: 96,
+          bottom: 130,
           child: GestureDetector(
             onTap: () => _openAddSheet(context),
             child: Container(
@@ -262,11 +375,25 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     );
   }
 
+  void _openEditSheet(BuildContext context, AgendaEvent existing) {
+    _openSheetInternal(context, existing: existing);
+  }
+
   void _openAddSheet(BuildContext context) {
-    final titleCtrl = TextEditingController();
-    DateTime selectedDate = selected;
-    TimeOfDay selectedTime = TimeOfDay.now();
-    String selectedColor = '🟣';
+    _openSheetInternal(context, existing: null);
+  }
+
+  void _openSheetInternal(BuildContext context, {AgendaEvent? existing}) {
+    final isEdit = existing != null;
+    final titleCtrl = TextEditingController(text: existing?.title ?? '');
+    DateTime selectedDate = existing?.date ?? selected;
+    TimeOfDay selectedTime = existing != null
+        ? TimeOfDay(
+            hour: int.tryParse(existing.time.split(':').first) ?? 18,
+            minute: int.tryParse(existing.time.split(':').last) ?? 0,
+          )
+        : TimeOfDay.now();
+    String selectedColor = existing?.color ?? '🟣';
 
     final colors = const ['🟣', '🟠', '🟡', '🟢', '🔵', '🔴'];
 
@@ -287,10 +414,11 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                     const BorderRadius.vertical(top: Radius.circular(18)),
               ),
               child: SafeArea(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                     Center(
                       child: Container(
                         width: 44,
@@ -301,9 +429,30 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    Text('Nouvel événement',
-                        style: StoryText.serif(
-                            size: 20, weight: FontWeight.w700)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(isEdit ? 'Modifier l\'événement' : 'Nouvel événement',
+                            style: StoryText.serif(
+                                size: 20, weight: FontWeight.w700)),
+                        if (isEdit)
+                          IconButton(
+                            tooltip: 'Supprimer',
+                            onPressed: () {
+                              ref
+                                  .read(agendaProvider.notifier)
+                                  .deleteEvent(existing.id);
+                              Navigator.pop(ctx);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text('🗑 Événement supprimé')),
+                              );
+                            },
+                            icon: Icon(Icons.delete_outline_rounded,
+                                color: const Color(0xFFFF4466)),
+                          ),
+                      ],
+                    ),
                     const SizedBox(height: 16),
 
                     Text('TITRE',
@@ -449,25 +598,51 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                         ),
                         onPressed: () {
                           final title = titleCtrl.text.trim();
-                          if (title.isEmpty) return;
-                          ref.read(agendaProvider.notifier).addEvent(
-                                date: selectedDate,
-                                title: title,
-                                time:
-                                    '${selectedTime.hour.toString().padLeft(2, '0')}:${selectedTime.minute.toString().padLeft(2, '0')}',
-                                color: selectedColor,
-                              );
+                          if (title.isEmpty) {
+                            ScaffoldMessenger.of(ctx).showSnackBar(
+                              const SnackBar(
+                                  content: Text(
+                                      'Donne un titre à ton événement !')),
+                            );
+                            return;
+                          }
+                          final timeStr =
+                              '${selectedTime.hour.toString().padLeft(2, '0')}:${selectedTime.minute.toString().padLeft(2, '0')}';
+
+                          if (isEdit) {
+                            ref.read(agendaProvider.notifier).updateEvent(
+                                  id: existing.id,
+                                  date: selectedDate,
+                                  title: title,
+                                  time: timeStr,
+                                  color: selectedColor,
+                                );
+                          } else {
+                            ref.read(agendaProvider.notifier).addEvent(
+                                  date: selectedDate,
+                                  title: title,
+                                  time: timeStr,
+                                  color: selectedColor,
+                                );
+                          }
                           setState(() => selected = DateTime(
                               selectedDate.year,
                               selectedDate.month,
                               selectedDate.day));
                           Navigator.pop(ctx);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content: Text(isEdit
+                                    ? '✓ Événement modifié'
+                                    : '✓ Événement ajouté le ${selectedDate.day}/${selectedDate.month}')),
+                          );
                         },
-                        child: const Text('Ajouter'),
+                        child: Text(isEdit ? 'Enregistrer' : 'Ajouter'),
                       ),
                     ),
                     const SizedBox(height: 10),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

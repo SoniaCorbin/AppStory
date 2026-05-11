@@ -83,6 +83,23 @@ class AtelierController extends Notifier<AtelierState> {
     );
   }
 
+  /// Ajoute un bloc avec une valeur précise (depuis la bibliothèque).
+  /// Si le type existe déjà, on remplace simplement la valeur.
+  void addBlockWithValue(BlockType type, String value) {
+    if (state.assembled.any((b) => b.type == type)) {
+      updateBlockValue(type, value);
+      return;
+    }
+    state = state.copyWith(
+      assembled: [
+        ...state.assembled,
+        AssembledBlock(type: type, value: value)
+      ],
+      generated: false,
+      story: '',
+    );
+  }
+
   void removeBlock(BlockType type) {
     state = state.copyWith(
       assembled: state.assembled.where((b) => b.type != type).toList(),
@@ -132,7 +149,8 @@ class AtelierController extends Notifier<AtelierState> {
     final color = _palette[Random().nextInt(_palette.length)];
 
     final newStory = Story(
-      id: DateTime.now().millisecondsSinceEpoch,
+      // Hive limite les clés à 32 bits → on utilise les secondes (pas les ms)
+      id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
       title: title,
       genre: genre,
       blocks: List.from(state.assembled),

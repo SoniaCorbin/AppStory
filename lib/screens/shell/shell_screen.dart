@@ -8,6 +8,8 @@ import '../../state/theme_provider.dart';
 import '../profil/profil_screen.dart';
 import '../agenda/agenda_screen.dart';
 import '../editor/editor_screen.dart';
+import '../search/search_screen.dart';
+import '../search/search_screen.dart';
 
 import '../atelier/atelier_screen.dart';
 import '../coffre/coffre_screen.dart';
@@ -38,8 +40,10 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
   }
 
   void _openSearch() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Recherche (à venir)')),
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const SearchScreen(),
+      ),
     );
   }
 

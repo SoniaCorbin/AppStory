@@ -34,6 +34,7 @@ class AgendaRecord extends HiveObject {
 
   AgendaEvent toModel() {
     return AgendaEvent(
+      id: id,
       date: date,
       title: title,
       time: time,

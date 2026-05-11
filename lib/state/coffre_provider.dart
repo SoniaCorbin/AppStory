@@ -52,7 +52,8 @@ class CoffreNotifier extends StateNotifier<List<CoffreItem>> {
     List<String> tags = const [],
   }) {
     final now = DateTime.now();
-    final id = now.millisecondsSinceEpoch;
+    // Hive limite les clés à 32 bits → on utilise les secondes (pas les ms)
+    final id = now.millisecondsSinceEpoch ~/ 1000;
 
     String icon;
     Color color;

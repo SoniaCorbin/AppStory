@@ -16,8 +16,14 @@ class AgendaNotifier extends StateNotifier<List<AgendaEvent>> {
   Box<AgendaRecord> get _box => Hive.box<AgendaRecord>('agenda');
 
   void _loadFromHive() {
-    if (!_box.isOpen) return;
+    if (!_box.isOpen) {
+      // ignore: avoid_print
+      print('[AgendaNotifier] _box not open, skipping load');
+      return;
+    }
     final records = _box.values.toList();
+    // ignore: avoid_print
+    print('[AgendaNotifier] Loaded ${records.length} events from Hive');
     state = records
         .map((r) => AgendaEvent(
               id: r.id,
@@ -36,7 +42,8 @@ class AgendaNotifier extends StateNotifier<List<AgendaEvent>> {
     required String time,
     String color = '🟣',
   }) async {
-    final id = DateTime.now().millisecondsSinceEpoch;
+    // Hive limite les clés à 32 bits → on utilise les secondes (pas les ms)
+    final id = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     final record = AgendaRecord(
       id: id,
       date: DateTime(date.year, date.month, date.day),
@@ -46,12 +53,32 @@ class AgendaNotifier extends StateNotifier<List<AgendaEvent>> {
       completed: false,
     );
     await _box.put(id, record);
-    state = [...state, record.toModel().copyWith(id: id)];
+    // ignore: avoid_print
+    print('[AgendaNotifier] Saved event "$title" (id=$id), box has ${_box.length} entries');
+    // Recharge depuis Hive pour s'assurer que tout est en sync
+    _loadFromHive();
+  }
+
+  Future<void> updateEvent({
+    required int id,
+    required DateTime date,
+    required String title,
+    required String time,
+    required String color,
+  }) async {
+    final existing = _box.get(id);
+    if (existing == null) return;
+    existing.date = DateTime(date.year, date.month, date.day);
+    existing.title = title;
+    existing.time = time;
+    existing.color = color;
+    await existing.save();
+    _loadFromHive();
   }
 
   Future<void> deleteEvent(int id) async {
-    state = state.where((e) => e.id != id).toList();
     await _box.delete(id);
+    _loadFromHive();
   }
 
   Future<void> toggleComplete(int id) async {

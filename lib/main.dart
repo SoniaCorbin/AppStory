@@ -6,6 +6,7 @@ import 'models/block_type.dart';
 import 'models/coffre_item.dart';
 import 'storage/agenda_record.dart';
 import 'storage/coffre_record.dart';
+import 'storage/library_record.dart';
 import 'storage/story_record.dart';
 
 Future<void> main() async {
@@ -21,11 +22,13 @@ Future<void> main() async {
   Hive.registerAdapter(CoffreItemTypeAdapter());     // typeId 3
   Hive.registerAdapter(CoffreRecordAdapter());       // typeId 4
   Hive.registerAdapter(AgendaRecordAdapter());       // typeId 5
+  Hive.registerAdapter(LibraryRecordAdapter());      // typeId 6
 
   // Ouverture des boîtes
   await Hive.openBox<StoryRecord>('stories');
   await Hive.openBox<CoffreRecord>('coffre');
   await Hive.openBox<AgendaRecord>('agenda');
+  await Hive.openBox<LibraryRecord>('library');
   await Hive.openBox('settings'); // box type-less pour les flags simples
 
   runApp(
