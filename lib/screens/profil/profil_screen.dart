@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/story_tokens.dart';
 import '../../core/theme/story_text_styles.dart';
 import '../../models/coffre_item.dart';
+import '../../services/export_service.dart';
 import '../../state/coffre_provider.dart';
 import '../../state/story_provider.dart';
 import '../../state/theme_provider.dart';
@@ -263,11 +265,45 @@ class ProfilScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 10),
                     _ActionRow(
-                      title: 'Exporter mes données',
-                      subtitle: 'À venir',
-                      onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Export (à venir)')),
-                      ),
+                      title: 'Exporter toutes mes histoires',
+                      subtitle: '${stories.length} histoire${stories.length > 1 ? 's' : ''} en Markdown',
+                      onTap: () async {
+                        if (stories.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content:
+                                    Text('Aucune histoire à exporter')),
+                          );
+                          return;
+                        }
+                        try {
+                          // Concatène toutes les histoires en un seul Markdown
+                          final buffer = StringBuffer();
+                          buffer.writeln(
+                              '# Mes histoires StoryBlocks\n');
+                          buffer.writeln(
+                              '_Export du ${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}_\n\n');
+                          for (final s in stories) {
+                            buffer.writeln(
+                                ExportService.toMarkdown(s));
+                            buffer.writeln('\n\n---\n\n');
+                          }
+                          // Partage le tout dans un seul fichier
+                          await Clipboard.setData(ClipboardData(
+                              text: buffer.toString()));
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text(
+                                    '✓ Copié dans le presse-papier !')),
+                          );
+                        } catch (e) {
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Erreur : $e')),
+                          );
+                        }
+                      },
                     ),
                   ],
                 ),

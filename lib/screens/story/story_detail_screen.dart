@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/constants/story_tokens.dart';
 import '../../core/theme/story_text_styles.dart';
 import '../../models/story.dart';
+import '../../services/export_service.dart';
 import '../../widgets/backgrounds/grid_bg.dart';
 import '../../widgets/backgrounds/mesh_blobs.dart';
 import '../../widgets/chips/block_chip.dart';
@@ -36,8 +37,8 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          IgnorePointer(child: const GridBg(opacity: 0.25)),
-          IgnorePointer(child: const MeshBlobs(warm: true)),
+          const GridBg(opacity: 0.25),
+          const MeshBlobs(warm: true),
           Positioned.fill(
             child: ListView(
               padding: const EdgeInsets.only(bottom: 28),
@@ -52,11 +53,55 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
                         icon: Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: C.textDim),
                       ),
                       const Spacer(),
-                      IconButton(
-                        onPressed: () {
-                          // Tu peux ajouter un menu contextuel ici si tu veux
+                      // Bouton Export
+                      PopupMenuButton<String>(
+                        icon: Icon(Icons.share_rounded, color: C.textDim),
+                        tooltip: 'Exporter / Partager',
+                        color: C.surface,
+                        onSelected: (choice) async {
+                          try {
+                            if (choice == 'md') {
+                              await ExportService.shareMarkdown(story);
+                            } else if (choice == 'pdf') {
+                              await ExportService.sharePdf(story);
+                            }
+                          } catch (e) {
+                            if (!context.mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                  content: Text(
+                                      'Erreur lors de l\'export : $e')),
+                            );
+                          }
                         },
-                        icon: Icon(Icons.more_horiz_rounded, color: C.textDim),
+                        itemBuilder: (ctx) => [
+                          PopupMenuItem(
+                            value: 'md',
+                            child: Row(
+                              children: [
+                                Icon(Icons.description_outlined,
+                                    color: C.textMuted, size: 18),
+                                const SizedBox(width: 10),
+                                Text('Partager en Markdown',
+                                    style: StoryText.sans(
+                                        size: 13, color: C.text)),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: 'pdf',
+                            child: Row(
+                              children: [
+                                Icon(Icons.picture_as_pdf_outlined,
+                                    color: C.textMuted, size: 18),
+                                const SizedBox(width: 10),
+                                Text('Partager en PDF',
+                                    style: StoryText.sans(
+                                        size: 13, color: C.text)),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),

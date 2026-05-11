@@ -64,8 +64,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          IgnorePointer(child: const GridBg(opacity: 0.25)),
-          IgnorePointer(child: const MeshBlobs(warm: false)),
+          const GridBg(opacity: 0.25),
+          const MeshBlobs(warm: false),
           Positioned.fill(
             child: ListView(
               padding: const EdgeInsets.only(bottom: 28),

@@ -54,8 +54,8 @@ class HomeScreen extends ConsumerWidget {
 
     return Stack(
       children: [
-        IgnorePointer(child: const GridBg(opacity: 0.25)),
-        IgnorePointer(child: const MeshBlobs(warm: true)),
+        const GridBg(opacity: 0.25),
+        const MeshBlobs(warm: true),
         Positioned.fill(
           child: ListView(
             padding: const EdgeInsets.only(bottom: 110),

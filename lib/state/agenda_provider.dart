@@ -16,14 +16,8 @@ class AgendaNotifier extends StateNotifier<List<AgendaEvent>> {
   Box<AgendaRecord> get _box => Hive.box<AgendaRecord>('agenda');
 
   void _loadFromHive() {
-    if (!_box.isOpen) {
-      // ignore: avoid_print
-      print('[AgendaNotifier] _box not open, skipping load');
-      return;
-    }
+    if (!_box.isOpen) return;
     final records = _box.values.toList();
-    // ignore: avoid_print
-    print('[AgendaNotifier] Loaded ${records.length} events from Hive');
     state = records
         .map((r) => AgendaEvent(
               id: r.id,
@@ -53,8 +47,6 @@ class AgendaNotifier extends StateNotifier<List<AgendaEvent>> {
       completed: false,
     );
     await _box.put(id, record);
-    // ignore: avoid_print
-    print('[AgendaNotifier] Saved event "$title" (id=$id), box has ${_box.length} entries');
     // Recharge depuis Hive pour s'assurer que tout est en sync
     _loadFromHive();
   }

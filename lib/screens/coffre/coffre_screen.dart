@@ -301,90 +301,230 @@ class _CoffreScreenState extends ConsumerState<CoffreScreen> {
   }
 
   void _openDetails(BuildContext context, CoffreItem item) {
+    _openEditSheet(context, existing: item);
+  }
+
+  void _openEditSheet(BuildContext context, {required CoffreItem existing}) {
+    final titleCtrl = TextEditingController(text: existing.title);
+    final tagsCtrl =
+        TextEditingController(text: existing.tags.join(', '));
+    CoffreItemType selectedType = existing.type;
+    bool isPinned = existing.pinned;
+
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) {
-        return Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: C.surface,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
-          ),
-          child: SafeArea(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 44,
-                    height: 4,
-                    decoration: BoxDecoration(
-                        color: C.surface3,
-                        borderRadius: BorderRadius.circular(99)),
+        return StatefulBuilder(builder: (ctx, setSheetState) {
+          return Padding(
+            padding: EdgeInsets.only(
+                bottom: MediaQuery.of(ctx).viewInsets.bottom),
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: C.surface,
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(18)),
+              ),
+              child: SafeArea(
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 44,
+                          height: 4,
+                          decoration: BoxDecoration(
+                              color: C.surface3,
+                              borderRadius: BorderRadius.circular(99)),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Modifier',
+                              style: StoryText.serif(
+                                  size: 20, weight: FontWeight.w700)),
+                          Row(
+                            children: [
+                              // Toggle Pin
+                              IconButton(
+                                tooltip: isPinned ? 'Désépingler' : 'Épingler',
+                                onPressed: () {
+                                  setSheetState(() => isPinned = !isPinned);
+                                },
+                                icon: Icon(
+                                  isPinned
+                                      ? Icons.push_pin
+                                      : Icons.push_pin_outlined,
+                                  color: isPinned ? C.primary : C.textMuted,
+                                ),
+                              ),
+                              // Delete
+                              IconButton(
+                                tooltip: 'Supprimer',
+                                onPressed: () {
+                                  ref
+                                      .read(coffreProvider.notifier)
+                                      .deleteItem(existing.id);
+                                  Navigator.pop(ctx);
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(
+                                    const SnackBar(
+                                        content: Text('🗑 Supprimé')),
+                                  );
+                                },
+                                icon: Icon(Icons.delete_outline_rounded,
+                                    color: const Color(0xFFFF4466)),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+
+                      // Type selector
+                      Text('TYPE',
+                          style: StoryText.mono(
+                              size: 10,
+                              color: C.textDim,
+                              letterSpacing: 2)),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          for (final t in CoffreItemType.values) ...[
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () => setSheetState(
+                                    () => selectedType = t),
+                                child: Container(
+                                  margin: const EdgeInsets.symmetric(
+                                      horizontal: 4),
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 12),
+                                  decoration: BoxDecoration(
+                                    color: selectedType == t
+                                        ? C.secondary.withValues(alpha: 0.18)
+                                        : C.surface2,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: selectedType == t
+                                          ? C.secondary
+                                              .withValues(alpha: 0.40)
+                                          : Colors.transparent,
+                                    ),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      _typeLabel(t),
+                                      style: StoryText.mono(
+                                        size: 11,
+                                        color: selectedType == t
+                                            ? C.secondary
+                                            : C.textMuted,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Title
+                      Text('TITRE',
+                          style: StoryText.mono(
+                              size: 10,
+                              color: C.textDim,
+                              letterSpacing: 2)),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: titleCtrl,
+                        decoration: InputDecoration(
+                          hintText: 'Une idée, un projet, une note…',
+                          filled: true,
+                          fillColor: C.surface2,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Tags
+                      Text('TAGS',
+                          style: StoryText.mono(
+                              size: 10,
+                              color: C.textDim,
+                              letterSpacing: 2)),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: tagsCtrl,
+                        decoration: InputDecoration(
+                          hintText: 'thriller, paris, mystère',
+                          helperText: 'Séparés par des virgules',
+                          helperStyle:
+                              StoryText.sans(size: 10, color: C.textDim),
+                          filled: true,
+                          fillColor: C.surface2,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton(
+                          style: FilledButton.styleFrom(
+                            backgroundColor: C.secondary,
+                            foregroundColor: Colors.white,
+                            padding:
+                                const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                          ),
+                          onPressed: () {
+                            final title = titleCtrl.text.trim();
+                            if (title.isEmpty) return;
+                            final tags = tagsCtrl.text
+                                .split(',')
+                                .map((t) => t.trim())
+                                .where((t) => t.isNotEmpty)
+                                .toList();
+                            ref.read(coffreProvider.notifier).updateItem(
+                                  existing.copyWith(
+                                    type: selectedType,
+                                    title: title,
+                                    tags: tags,
+                                    pinned: isPinned,
+                                  ),
+                                );
+                            Navigator.pop(ctx);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text('✓ Modifications enregistrées')),
+                            );
+                          },
+                          child: const Text('Enregistrer'),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Text(item.icon, style: const TextStyle(fontSize: 28)),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(item.title,
-                          style: StoryText.serif(
-                              size: 18, weight: FontWeight.w700)),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text('Ajouté le ${item.date}',
-                    style: StoryText.sans(size: 12, color: C.textDim)),
-                const SizedBox(height: 20),
-                Row(
-                  children: [
-                    Expanded(
-                      child: FilledButton.icon(
-                        style: FilledButton.styleFrom(
-                          backgroundColor: item.pinned
-                              ? C.primary.withValues(alpha: 0.20)
-                              : C.surface2,
-                          foregroundColor:
-                              item.pinned ? C.primary : C.textMuted,
-                        ),
-                        onPressed: () {
-                          ref
-                              .read(coffreProvider.notifier)
-                              .togglePin(item.id);
-                          Navigator.pop(ctx);
-                        },
-                        icon: const Icon(Icons.push_pin_outlined),
-                        label: Text(item.pinned ? 'Désépingler' : 'Épingler'),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    FilledButton.icon(
-                      style: FilledButton.styleFrom(
-                        backgroundColor:
-                            const Color(0xFFFF4466).withValues(alpha: 0.16),
-                        foregroundColor: const Color(0xFFFF4466),
-                      ),
-                      onPressed: () {
-                        ref
-                            .read(coffreProvider.notifier)
-                            .deleteItem(item.id);
-                        Navigator.pop(ctx);
-                      },
-                      icon: const Icon(Icons.delete_outline_rounded),
-                      label: const Text('Supprimer'),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-              ],
+              ),
             ),
-          ),
-        );
+          );
+        });
       },
     );
   }
