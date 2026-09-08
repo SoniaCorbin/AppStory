@@ -1,29 +1,32 @@
 import 'package:flutter/material.dart';
 
-enum NavTab { home, atelier, coffre, agenda, profil }
+enum NavTab { home, atelier, coffre, idees, agenda, profil }
 
 extension NavTabX on NavTab {
   String get id => switch (this) {
-    NavTab.home => 'home',
+    NavTab.home    => 'home',
     NavTab.atelier => 'atelier',
-    NavTab.coffre => 'coffre',
-    NavTab.agenda => 'agenda',
-    NavTab.profil => 'profil',
+    NavTab.coffre  => 'coffre',
+    NavTab.idees   => 'idees',
+    NavTab.agenda  => 'agenda',
+    NavTab.profil  => 'profil',
   };
 
   String get label => switch (this) {
-    NavTab.home => 'Accueil',
+    NavTab.home    => 'Accueil',
     NavTab.atelier => 'Atelier',
-    NavTab.coffre => 'Coffre',
-    NavTab.agenda => 'Agenda',
-    NavTab.profil => 'Profil',
+    NavTab.coffre  => 'Coffre',
+    NavTab.idees   => 'Idées',
+    NavTab.agenda  => 'Agenda',
+    NavTab.profil  => 'Profil',
   };
 
   IconData get icon => switch (this) {
-    NavTab.home => Icons.grid_view_rounded,
+    NavTab.home    => Icons.grid_view_rounded,
     NavTab.atelier => Icons.science_rounded,
-    NavTab.coffre => Icons.diamond_rounded,
-    NavTab.agenda => Icons.calendar_month_rounded,
-    NavTab.profil => Icons.person_rounded,
+    NavTab.coffre  => Icons.diamond_rounded,
+    NavTab.idees   => Icons.lightbulb_rounded,
+    NavTab.agenda  => Icons.calendar_month_rounded,
+    NavTab.profil  => Icons.person_rounded,
   };
 }

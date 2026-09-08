@@ -10,6 +10,8 @@ import 'storage/agenda_record.dart';
 import 'storage/coffre_record.dart';
 import 'storage/library_record.dart';
 import 'storage/story_record.dart';
+import 'models/idea_block.dart';
+
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,6 +32,8 @@ Future<void> main() async {
   Hive.registerAdapter(CoffreRecordAdapter());    // typeId 4
   Hive.registerAdapter(AgendaRecordAdapter());    // typeId 5
   Hive.registerAdapter(LibraryRecordAdapter());   // typeId 6
+  Hive.registerAdapter(IdeaBlockAdapter());       // typeId 7
+
 
   // ---------- OUVERTURE DES BOÎTES CHIFFRÉES ----------
   // Toutes les données utilisateur sont chiffrées sur disque
@@ -40,6 +44,7 @@ Future<void> main() async {
 
   // La box settings reste en clair (que des bool : onboarded, isDark, etc.)
   await Hive.openBox('settings');
+  await Hive.openBox<IdeaBlock>('ideas', encryptionCipher: cipher);
 
   runApp(
     const ProviderScope(
