@@ -8,6 +8,7 @@ import '../../services/export_service.dart';
 import '../../state/ai_settings_provider.dart';
 import '../../state/coffre_provider.dart';
 import '../../state/story_provider.dart';
+import '../../state/streak_provider.dart';
 import '../../state/theme_provider.dart';
 import '../../widgets/backgrounds/grid_bg.dart';
 import '../../widgets/backgrounds/mesh_blobs.dart';
@@ -41,13 +42,25 @@ class ProfilScreen extends ConsumerWidget {
         : stories.map((s) => s.progress).reduce((a, b) => a + b) /
             (stories.length * 100.0);
 
-    final badges = const [
-      _Badge('⚡', 'Éclair', '10 jours actifs'),
-      _Badge('🧠', 'Archiviste', '50 notes'),
-      _Badge('✦', 'Alchimiste', '1 amorce générée'),
-      _Badge('🏁', 'Finisseur', '1 projet terminé'),
-      _Badge('🔥', 'Streak', '7 jours de suite'),
-      _Badge('💎', 'Coffre', '1 épinglé'),
+    final streak = ref.watch(streakProvider);
+    final aiSettings = ref.watch(aiSettingsProvider);
+    final pinned = coffre.where((i) => i.pinned).length;
+    final finished = stories.where((s) => s.progress >= 100).length;
+    final hasHook = stories.any((s) => s.hook.trim().isNotEmpty);
+
+    final badges = [
+      _Badge('⚡', 'Éclair', '10 jours actifs',
+          unlocked: streak.totalActiveDays >= 10),
+      _Badge('🧠', 'Archiviste', '50 notes',
+          unlocked: notes >= 50),
+      _Badge('✦', 'Alchimiste', '1 amorce générée',
+          unlocked: hasHook && aiSettings.hasApiKey),
+      _Badge('🏁', 'Finisseur', '1 projet terminé',
+          unlocked: finished >= 1),
+      _Badge('🔥', 'Streak', '7 jours de suite',
+          unlocked: streak.currentStreak >= 7),
+      _Badge('💎', 'Coffre', '1 épinglé',
+          unlocked: pinned >= 1),
     ];
 
     return Stack(
@@ -356,7 +369,8 @@ class _Badge {
   final String icon;
   final String title;
   final String subtitle;
-  const _Badge(this.icon, this.title, this.subtitle);
+  final bool unlocked;
+  const _Badge(this.icon, this.title, this.subtitle, {required this.unlocked});
 }
 
 class _BadgeTile extends StatelessWidget {
@@ -368,28 +382,42 @@ class _BadgeTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: C.surface,
+        color: b.unlocked ? C.surface : C.surface.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+        border: Border.all(
+          color: b.unlocked
+              ? C.accent.withValues(alpha: 0.30)
+              : Colors.white.withValues(alpha: 0.06),
+        ),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(b.icon, style: const TextStyle(fontSize: 20)),
+          Opacity(
+            opacity: b.unlocked ? 1.0 : 0.3,
+            child: Text(b.icon, style: const TextStyle(fontSize: 20)),
+          ),
           const SizedBox(height: 8),
           Text(
             b.title,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: StoryText.mono(size: 10, color: C.text),
+            style: StoryText.mono(
+              size: 10,
+              color: b.unlocked ? C.text : C.textDim,
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 4),
           Text(
-            b.subtitle,
+            b.unlocked ? '✓ Débloqué' : b.subtitle,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: StoryText.sans(size: 10, color: C.textDim, style: FontStyle.italic),
+            style: StoryText.sans(
+              size: 10,
+              color: b.unlocked ? C.accent : C.textDim,
+              style: FontStyle.italic,
+            ),
             textAlign: TextAlign.center,
           ),
         ],

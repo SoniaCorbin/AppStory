@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/story_tokens.dart';
 import '../../models/story.dart';
 import '../../state/story_provider.dart';
+import '../../state/streak_provider.dart';
 import '../../state/theme_provider.dart';
 import '../profil/profil_screen.dart';
 import '../agenda/agenda_screen.dart';
@@ -13,6 +14,7 @@ import '../search/search_screen.dart';
 
 import '../atelier/atelier_screen.dart';
 import '../coffre/coffre_screen.dart';
+import '../coffre/ideas_screen.dart';
 import '../home/home_screen.dart';
 import '../story/story_detail_screen.dart';
 
@@ -30,6 +32,14 @@ class ShellScreen extends ConsumerStatefulWidget {
 class _ShellScreenState extends ConsumerState<ShellScreen> {
   NavTab active = NavTab.home;
   bool showDrawer = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(streakProvider.notifier).recordActivity();
+    });
+  }
 
   void _openStory(Story s) {
     Navigator.of(context).push(
@@ -88,6 +98,10 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
       );
     } else if (active == NavTab.agenda) {
       content = AgendaScreen(
+        onMenu: () => setState(() => showDrawer = true),
+      );
+    } else if (active == NavTab.idees) {
+      content = IdeasScreen(
         onMenu: () => setState(() => showDrawer = true),
       );
     } else if (active == NavTab.profil) {

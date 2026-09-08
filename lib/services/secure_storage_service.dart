@@ -22,8 +22,7 @@ class SecureStorageService {
     final stored = await _storage.read(key: _hiveKeyName);
 
     if (stored != null) {
-      // ignore: avoid_print
-      print('[SecureStorage] ✅ Clé existante récupérée');
+
       return base64Url.decode(stored);
     }
 
@@ -33,8 +32,7 @@ class SecureStorageService {
       key: _hiveKeyName,
       value: base64UrlEncode(newKey),
     );
-    // ignore: avoid_print
-    print('[SecureStorage] 🆕 Nouvelle clé générée et sauvegardée');
+
     return newKey;
   }
 

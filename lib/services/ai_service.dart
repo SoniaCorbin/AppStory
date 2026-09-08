@@ -6,7 +6,7 @@ import '../models/block_type.dart';
 /// Service pour appeler l'API Claude d'Anthropic.
 class AiService {
   static const _apiUrl = 'https://api.anthropic.com/v1/messages';
-  static const _model = 'claude-sonnet-4-5';
+  static const _model = 'claude-sonnet-4-6';
   static const _apiVersion = '2023-06-01';
   static const _maxTokens = 1024;
 
