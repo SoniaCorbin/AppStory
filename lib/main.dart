@@ -11,6 +11,7 @@ import 'storage/coffre_record.dart';
 import 'storage/library_record.dart';
 import 'storage/story_record.dart';
 import 'models/idea_block.dart';
+import 'models/gallery_item.dart';
 
 
 Future<void> main() async {
@@ -33,6 +34,8 @@ Future<void> main() async {
   Hive.registerAdapter(AgendaRecordAdapter());    // typeId 5
   Hive.registerAdapter(LibraryRecordAdapter());   // typeId 6
   Hive.registerAdapter(IdeaBlockAdapter());       // typeId 7
+  Hive.registerAdapter(GalleryItemAdapter());     // typeId 8
+
 
 
   // ---------- OUVERTURE DES BOÎTES CHIFFRÉES ----------
@@ -45,6 +48,7 @@ Future<void> main() async {
   // La box settings reste en clair (que des bool : onboarded, isDark, etc.)
   await Hive.openBox('settings');
   await Hive.openBox<IdeaBlock>('ideas', encryptionCipher: cipher);
+  await Hive.openBox<GalleryItem>('gallery', encryptionCipher: cipher);
 
   runApp(
     const ProviderScope(

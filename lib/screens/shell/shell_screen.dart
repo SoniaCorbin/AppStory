@@ -16,6 +16,7 @@ import '../atelier/atelier_screen.dart';
 import '../coffre/coffre_screen.dart';
 import '../coffre/ideas_screen.dart';
 import '../stats/stats_screen.dart';
+import '../gallery/gallery_screen.dart';
 import '../home/home_screen.dart';
 import '../story/story_detail_screen.dart';
 
@@ -107,6 +108,10 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
       );
     } else if (active == NavTab.stats) {
       content = StatsScreen(
+        onMenu: () => setState(() => showDrawer = true),
+      );
+    } else if (active == NavTab.galerie) {
+      content = GalleryScreen(
         onMenu: () => setState(() => showDrawer = true),
       );
     } else if (active == NavTab.profil) {
