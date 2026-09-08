@@ -199,6 +199,7 @@ class DrawerMenu extends StatelessWidget {
     NavTab.coffre => 'Toutes vos idées',
     NavTab.idees => 'Pépites & Inspiration',
     NavTab.stats => 'Votre activité créative',
+    NavTab.galerie => 'Images d\'inspiration',
     NavTab.agenda => 'Journal créatif',
     NavTab.profil => 'Stats & badges',
   };
