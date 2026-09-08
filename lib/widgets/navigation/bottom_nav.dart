@@ -3,10 +3,18 @@ import '../../core/constants/story_tokens.dart';
 import '../../core/theme/story_text_styles.dart';
 import '../../screens/shell/nav_items.dart';
 
+// Onglets visibles dans la bottom nav (les autres sont dans le drawer)
+const _bottomNavTabs = [
+  NavTab.home,
+  NavTab.atelier,
+  NavTab.coffre,
+  NavTab.agenda,
+  NavTab.profil,
+];
+
 class BottomNav extends StatelessWidget {
   final NavTab active;
   final ValueChanged<NavTab> onNav;
-
   const BottomNav({super.key, required this.active, required this.onNav});
 
   @override
@@ -26,7 +34,7 @@ class BottomNav extends StatelessWidget {
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: NavTab.values.map((t) {
+            children: _bottomNavTabs.map((t) {
               final isActive = t == active;
               return InkWell(
                 onTap: () => onNav(t),
@@ -58,7 +66,7 @@ class BottomNav extends StatelessWidget {
                           color: isActive ? C.primary : Colors.transparent,
                           borderRadius: BorderRadius.circular(2),
                         ),
-                      )
+                      ),
                     ],
                   ),
                 ),
