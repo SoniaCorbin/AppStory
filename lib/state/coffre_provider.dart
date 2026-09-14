@@ -60,15 +60,15 @@ class CoffreNotifier extends StateNotifier<List<CoffreItem>> {
     switch (type) {
       case CoffreItemType.projet:
         icon = '📖';
-        color = const Color(0xFF00D4FF);
+        color = const Color(0xFF0099CC);
         break;
       case CoffreItemType.note:
         icon = '🖊';
-        color = const Color(0xFF00E5A0);
+        color = const Color(0xFF007A4A);
         break;
       case CoffreItemType.idee:
         icon = '💡';
-        color = const Color(0xFFFFD700);
+        color = const Color(0xFFB8860B);
         break;
     }
 
