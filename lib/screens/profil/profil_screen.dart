@@ -14,14 +14,65 @@ import '../../widgets/backgrounds/grid_bg.dart';
 import '../../widgets/backgrounds/mesh_blobs.dart';
 import '../atelier/widgets/ham_btn.dart';
 import 'widgets/progress_ring.dart';
+import '../badges/badges_screen.dart';
+import '../../state/profile_provider.dart';
 
-class ProfilScreen extends ConsumerWidget {
+class ProfilScreen extends ConsumerStatefulWidget {
   final VoidCallback onMenu;
 
   const ProfilScreen({super.key, required this.onMenu});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProfilScreen> createState() => _ProfilScreenState();
+}
+
+class _ProfilScreenState extends ConsumerState<ProfilScreen> {
+
+  Future<void> _editName(BuildContext context) async {
+    final ctrl = TextEditingController(text: ref.read(profileProvider));
+    final result = await showDialog<String>(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: C.surface,
+        title: Text('Ton prénom',
+            style: StoryText.serif(size: 18, weight: FontWeight.w700)),
+        content: TextField(
+          controller: ctrl,
+          autofocus: true,
+          style: StoryText.sans(size: 14, color: C.text),
+          decoration: InputDecoration(
+            hintText: 'Écrivain...',
+            hintStyle: StoryText.sans(size: 14, color: C.textDim),
+            filled: true,
+            fillColor: C.bg,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Annuler',
+                style: StoryText.sans(size: 13, color: C.textMuted)),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: C.primary),
+            onPressed: () => Navigator.pop(context, ctrl.text),
+            child: Text('Sauver',
+                style: StoryText.mono(size: 12, color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+    if (result != null) {
+      await ref.read(profileProvider.notifier).setName(result);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     // Stats DYNAMIQUES depuis Hive
     final stories = ref.watch(storyProvider);
     final coffre = ref.watch(coffreProvider);
@@ -80,7 +131,7 @@ class ProfilScreen extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    HamBtn(onMenu: onMenu),
+                    HamBtn(onMenu: widget.onMenu),
                     Text('◉ PROFIL', style: StoryText.mono(size: 10, color: C.primary, letterSpacing: 3)),
                     const SizedBox(height: 6),
                     Text('Votre Atelier', style: StoryText.serif(size: 28, weight: FontWeight.w700)),
@@ -119,7 +170,17 @@ class ProfilScreen extends ConsumerWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Sonia', style: StoryText.serif(size: 18, weight: FontWeight.w700)),
+                            GestureDetector(
+                              onTap: () => _editName(context),
+                              child: Row(
+                                children: [
+                                  Text(ref.watch(profileProvider),
+                                      style: StoryText.serif(size: 18, weight: FontWeight.w700)),
+                                  const SizedBox(width: 6),
+                                  Icon(Icons.edit_outlined, size: 14, color: C.textDim),
+                                ],
+                              ),
+                            ),
                             const SizedBox(height: 2),
                             Text('Écrivain · Niveau $level', style: StoryText.mono(size: 10, color: C.primary)),
                             const SizedBox(height: 8),
@@ -203,7 +264,12 @@ class ProfilScreen extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text('BADGES', style: StoryText.mono(size: 10, color: C.textDim, letterSpacing: 2)),
-                    Text('Voir tout →', style: StoryText.mono(size: 10, color: C.primary)),
+                    GestureDetector(
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const BadgesScreen()),
+                      ),
+                      child: Text('Voir tout →', style: StoryText.mono(size: 10, color: C.primary)),
+                    ),
                   ],
                 ),
               ),
