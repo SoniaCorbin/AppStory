@@ -58,14 +58,14 @@ extension BlockTypeX on BlockType {
   };
 
   Color get color => switch (this) {
-    BlockType.ton => const Color(0xFF00D4FF),
-    BlockType.personnage => const Color(0xFFFF6B35),
-    BlockType.lieu => const Color(0xFF00E5A0),
-    BlockType.objectif => const Color(0xFF7B2FF7),
-    BlockType.obstacle => const Color(0xFFFF4466),
-    BlockType.twist => const Color(0xFFFFD700),
-    BlockType.fin => const Color(0xFFFF6B35),
-    BlockType.conflit => const Color(0xFFE040FB),
+    BlockType.ton        => const Color(0xFF0081AA), // bleu plus foncé
+    BlockType.personnage => const Color(0xFFD94F1A), // orange plus foncé
+    BlockType.lieu       => const Color(0xFF007A4A), // vert plus foncé
+    BlockType.objectif   => const Color(0xFF6020D0), // violet plus foncé
+    BlockType.obstacle   => const Color(0xFFCC2244), // rouge plus foncé
+    BlockType.twist      => const Color(0xFFB8860B), // jaune foncé/doré
+    BlockType.fin        => const Color(0xFFD94F1A), // orange foncé
+    BlockType.conflit    => const Color(0xFFB030D0), // magenta foncé
   };
 
   static List<BlockType> get all => BlockType.values;

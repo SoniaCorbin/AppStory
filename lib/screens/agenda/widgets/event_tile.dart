@@ -47,7 +47,7 @@ class EventTile extends StatelessWidget {
               border: Border.all(color: e.completed ? C.green.withValues(alpha: 0.45) : Colors.white.withValues(alpha: 0.10)),
             ),
             child: e.completed
-                ? const Center(child: Text('✓', style: TextStyle(color: C.green, fontSize: 12)))
+                ? Center(child: Text('✓', style: TextStyle(color: C.green, fontSize: 12)))
                 : null,
           ),
         ],
