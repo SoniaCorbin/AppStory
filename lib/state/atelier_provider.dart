@@ -16,12 +16,7 @@ final atelierProvider = NotifierProvider<AtelierController, AtelierState>(
 );
 
 class AtelierController extends Notifier<AtelierState> {
-  static final _initial = <AssembledBlock>[
-    AssembledBlock(type: BlockType.ton, value: 'Sombre & Mélancolique'),
-    AssembledBlock(type: BlockType.personnage, value: 'Détective désabusé, 45 ans'),
-    AssembledBlock(type: BlockType.lieu, value: 'Paris, hiver 1923'),
-    AssembledBlock(type: BlockType.conflit, value: 'Disparition d\'une héritière'),
-  ];
+  static final _initial = <AssembledBlock>[];
 
   static final _surprises = <List<AssembledBlock>>[
     [

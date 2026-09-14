@@ -11,6 +11,7 @@ import '../agenda/agenda_screen.dart';
 import '../editor/editor_screen.dart';
 import '../search/search_screen.dart';
 import '../search/search_screen.dart';
+import '../reader/reader_screen.dart';
 
 import '../atelier/atelier_screen.dart';
 import '../coffre/coffre_screen.dart';
@@ -55,6 +56,14 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => const SearchScreen(),
+      ),
+    );
+  }
+
+  void _openReader(Story s) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ReaderScreen(story: s),
       ),
     );
   }

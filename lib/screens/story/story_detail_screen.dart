@@ -8,6 +8,7 @@ import '../../widgets/backgrounds/grid_bg.dart';
 import '../../widgets/backgrounds/mesh_blobs.dart';
 import '../../widgets/chips/block_chip.dart';
 import '../editor/editor_screen.dart';
+import '../reader/reader_screen.dart';
 
 class StoryDetailScreen extends StatefulWidget {
   final Story story;
@@ -285,12 +286,27 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
                                 builder: (_) => EditorScreen(story: story),
                               ),
                             );
-
                             if (updated == null) return;
-
                             setState(() => story = updated);
                           },
                           child: const Text('Éditer'),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: FilledButton(
+                          style: FilledButton.styleFrom(
+                            backgroundColor: C.accent.withValues(alpha: 0.16),
+                            foregroundColor: C.accent,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          onPressed: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => ReaderScreen(story: story),
+                            ),
+                          ),
+                          child: const Text('Lire'),
                         ),
                       ),
                       const SizedBox(width: 10),
