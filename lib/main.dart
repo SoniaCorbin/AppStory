@@ -12,6 +12,7 @@ import 'storage/library_record.dart';
 import 'storage/story_record.dart';
 import 'models/idea_block.dart';
 import 'models/gallery_item.dart';
+import 'models/page_document.dart';
 
 
 Future<void> main() async {
@@ -35,6 +36,7 @@ Future<void> main() async {
   Hive.registerAdapter(LibraryRecordAdapter());   // typeId 6
   Hive.registerAdapter(IdeaBlockAdapter());       // typeId 7
   Hive.registerAdapter(GalleryItemAdapter());     // typeId 8
+  Hive.registerAdapter(PageDocumentAdapter());    // typeId 9
 
 
 
@@ -49,6 +51,7 @@ Future<void> main() async {
   await Hive.openBox('settings');
   await Hive.openBox<IdeaBlock>('ideas', encryptionCipher: cipher);
   await Hive.openBox<GalleryItem>('gallery', encryptionCipher: cipher);
+  await Hive.openBox<PageDocument>('pages', encryptionCipher: cipher);
 
   runApp(
     const ProviderScope(

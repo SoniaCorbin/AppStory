@@ -10,7 +10,6 @@ import '../profil/profil_screen.dart';
 import '../agenda/agenda_screen.dart';
 import '../editor/editor_screen.dart';
 import '../search/search_screen.dart';
-import '../search/search_screen.dart';
 import '../reader/reader_screen.dart';
 
 import '../atelier/atelier_screen.dart';
@@ -20,6 +19,7 @@ import '../stats/stats_screen.dart';
 import '../gallery/gallery_screen.dart';
 import '../home/home_screen.dart';
 import '../story/story_detail_screen.dart';
+import '../pages/pages_screen.dart';
 
 import '../../widgets/navigation/bottom_nav.dart';
 import '../../widgets/navigation/drawer_menu.dart';
@@ -121,6 +121,10 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
       );
     } else if (active == NavTab.galerie) {
       content = GalleryScreen(
+        onMenu: () => setState(() => showDrawer = true),
+      );
+    } else if (active == NavTab.pages) {
+      content = PagesScreen(
         onMenu: () => setState(() => showDrawer = true),
       );
     } else if (active == NavTab.profil) {

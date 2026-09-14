@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-enum NavTab { home, atelier, coffre, idees, stats, galerie, agenda, profil }
+enum NavTab { home, atelier, coffre, idees, stats, galerie, pages, agenda, profil }
 
 extension NavTabX on NavTab {
   String get id => switch (this) {
@@ -10,6 +10,7 @@ extension NavTabX on NavTab {
     NavTab.idees   => 'idees',
     NavTab.stats   => 'stats',
     NavTab.galerie => 'galerie',
+    NavTab.pages   => 'pages',
     NavTab.agenda  => 'agenda',
     NavTab.profil  => 'profil',
   };
@@ -21,6 +22,7 @@ extension NavTabX on NavTab {
     NavTab.idees   => 'Idées',
     NavTab.stats   => 'Stats',
     NavTab.galerie => 'Galerie',
+    NavTab.pages   => 'Pages',
     NavTab.agenda  => 'Agenda',
     NavTab.profil  => 'Profil',
   };
@@ -32,6 +34,7 @@ extension NavTabX on NavTab {
     NavTab.idees   => Icons.lightbulb_rounded,
     NavTab.stats   => Icons.trending_up_rounded,
     NavTab.galerie => Icons.collections_rounded,
+    NavTab.pages   => Icons.menu_book_rounded,
     NavTab.agenda  => Icons.calendar_month_rounded,
     NavTab.profil  => Icons.person_rounded,
   };
