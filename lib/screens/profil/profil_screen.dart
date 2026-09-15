@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/story_tokens.dart';
+import '../../core/routing/routes.dart';
 import '../../core/theme/story_text_styles.dart';
 import '../../models/coffre_item.dart';
+import '../../services/auth_service.dart';
 import '../../services/export_service.dart';
 import '../../state/ai_settings_provider.dart';
 import '../../state/coffre_provider.dart';
@@ -73,16 +75,13 @@ class _ProfilScreenState extends ConsumerState<ProfilScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Stats DYNAMIQUES depuis Hive
     final stories = ref.watch(storyProvider);
     final coffre = ref.watch(coffreProvider);
 
     final projects = stories.length;
     final blocks = stories.fold<int>(0, (s, st) => s + st.blocks.length);
-    final notes =
-        coffre.where((i) => i.type == CoffreItemType.note).length;
+    final notes = coffre.where((i) => i.type == CoffreItemType.note).length;
 
-    // XP basé sur l'activité réelle
     final xp = (projects * 50) + (blocks * 5) + (notes * 10);
     final level = (xp ~/ 200) + 1;
     final nextXp = level * 200;
@@ -91,7 +90,7 @@ class _ProfilScreenState extends ConsumerState<ProfilScreen> {
     final avgProjectProgress = stories.isEmpty
         ? 0.0
         : stories.map((s) => s.progress).reduce((a, b) => a + b) /
-            (stories.length * 100.0);
+        (stories.length * 100.0);
 
     final streak = ref.watch(streakProvider);
     final aiSettings = ref.watch(aiSettingsProvider);
@@ -118,7 +117,6 @@ class _ProfilScreenState extends ConsumerState<ProfilScreen> {
       children: [
         const GridBg(opacity: 0.25),
         const MeshBlobs(warm: true),
-
         Positioned.fill(
           child: ListView(
             padding: const EdgeInsets.only(bottom: 120),
@@ -294,15 +292,13 @@ class _ProfilScreenState extends ConsumerState<ProfilScreen> {
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
                 child: Column(
                   children: [
-                    // Toggle thème clair/sombre
+                    // Toggle thème
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 14),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                       decoration: BoxDecoration(
                         color: C.surface,
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.06)),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
                       ),
                       child: Row(
                         children: [
@@ -317,27 +313,18 @@ class _ProfilScreenState extends ConsumerState<ProfilScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Thème',
-                                    style: StoryText.sans(
-                                        size: 14,
-                                        weight: FontWeight.w600)),
+                                Text('Thème', style: StoryText.sans(size: 14, weight: FontWeight.w600)),
                                 const SizedBox(height: 4),
                                 Text(
-                                    ref.watch(themeProvider)
-                                        ? 'Sombre'
-                                        : 'Clair',
-                                    style: StoryText.sans(
-                                        size: 12,
-                                        color: C.textMuted,
-                                        style: FontStyle.italic)),
+                                  ref.watch(themeProvider) ? 'Sombre' : 'Clair',
+                                  style: StoryText.sans(size: 12, color: C.textMuted, style: FontStyle.italic),
+                                ),
                               ],
                             ),
                           ),
                           Switch(
                             value: ref.watch(themeProvider),
-                            onChanged: (_) => ref
-                                .read(themeProvider.notifier)
-                                .toggle(),
+                            onChanged: (_) => ref.read(themeProvider.notifier).toggle(),
                             activeColor: C.primary,
                           ),
                         ],
@@ -345,7 +332,6 @@ class _ProfilScreenState extends ConsumerState<ProfilScreen> {
                     ),
                     const SizedBox(height: 10),
 
-                    // ============ MODE IA ============
                     _AiModeCard(),
                     const SizedBox(height: 10),
 
@@ -355,32 +341,22 @@ class _ProfilScreenState extends ConsumerState<ProfilScreen> {
                       onTap: () async {
                         if (stories.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content:
-                                    Text('Aucune histoire à exporter')),
+                            const SnackBar(content: Text('Aucune histoire à exporter')),
                           );
                           return;
                         }
                         try {
-                          // Concatène toutes les histoires en un seul Markdown
                           final buffer = StringBuffer();
-                          buffer.writeln(
-                              '# Mes histoires StoryBlocks\n');
-                          buffer.writeln(
-                              '_Export du ${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}_\n\n');
+                          buffer.writeln('# Mes histoires StoryBlocks\n');
+                          buffer.writeln('_Export du ${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}_\n\n');
                           for (final s in stories) {
-                            buffer.writeln(
-                                ExportService.toMarkdown(s));
+                            buffer.writeln(ExportService.toMarkdown(s));
                             buffer.writeln('\n\n---\n\n');
                           }
-                          // Partage le tout dans un seul fichier
-                          await Clipboard.setData(ClipboardData(
-                              text: buffer.toString()));
+                          await Clipboard.setData(ClipboardData(text: buffer.toString()));
                           if (!context.mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text(
-                                    '✓ Copié dans le presse-papier !')),
+                            const SnackBar(content: Text('✓ Copié dans le presse-papier !')),
                           );
                         } catch (e) {
                           if (!context.mounted) return;
@@ -390,9 +366,49 @@ class _ProfilScreenState extends ConsumerState<ProfilScreen> {
                         }
                       },
                     ),
+                    const SizedBox(height: 10),
+
+                    _ActionRow(
+                      title: 'Se déconnecter',
+                      subtitle: 'Retour à l\'écran de connexion',
+                      onTap: () async {
+                        final ok = await showDialog<bool>(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            backgroundColor: C.surface,
+                            title: Text('Se déconnecter ?',
+                                style: StoryText.serif(size: 16, weight: FontWeight.w700)),
+                            content: Text(
+                              'Tes données locales restent sur l\'appareil.',
+                              style: StoryText.sans(size: 13, color: C.textMuted),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx, false),
+                                child: const Text('Annuler'),
+                              ),
+                              FilledButton(
+                                style: FilledButton.styleFrom(backgroundColor: Colors.redAccent),
+                                onPressed: () => Navigator.pop(ctx, true),
+                                child: const Text('Se déconnecter'),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (ok == true) {
+                          await AuthService.signOut();
+                          if (context.mounted) {
+                            Navigator.of(context).pushNamedAndRemoveUntil(
+                              Routes.auth,
+                                  (route) => false,
+                            );
+                          }
+                        }
+                      },
+                    ),
                   ],
                 ),
-              )
+              ),
             ],
           ),
         ),
@@ -468,10 +484,7 @@ class _BadgeTile extends StatelessWidget {
             b.title,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: StoryText.mono(
-              size: 10,
-              color: b.unlocked ? C.text : C.textDim,
-            ),
+            style: StoryText.mono(size: 10, color: b.unlocked ? C.text : C.textDim),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 4),
@@ -479,11 +492,7 @@ class _BadgeTile extends StatelessWidget {
             b.unlocked ? '✓ Débloqué' : b.subtitle,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: StoryText.sans(
-              size: 10,
-              color: b.unlocked ? C.accent : C.textDim,
-              style: FontStyle.italic,
-            ),
+            style: StoryText.sans(size: 10, color: b.unlocked ? C.accent : C.textDim, style: FontStyle.italic),
             textAlign: TextAlign.center,
           ),
         ],
@@ -492,7 +501,6 @@ class _BadgeTile extends StatelessWidget {
   }
 }
 
-/// Carte de configuration du Mode IA dans Profil.
 class _AiModeCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -521,29 +529,20 @@ class _AiModeCard extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Mode IA (Claude)',
-                        style: StoryText.sans(
-                            size: 14, weight: FontWeight.w600)),
+                    Text('Mode IA (Claude)', style: StoryText.sans(size: 14, weight: FontWeight.w600)),
                     const SizedBox(height: 4),
                     Text(
                       ai.hasApiKey
-                          ? (ai.enabled
-                              ? 'Activé — Génération via Claude'
-                              : 'Désactivé — Génération locale')
+                          ? (ai.enabled ? 'Activé — Génération via Claude' : 'Désactivé — Génération locale')
                           : 'Aucune clé API configurée',
-                      style: StoryText.sans(
-                          size: 12,
-                          color: C.textMuted,
-                          style: FontStyle.italic),
+                      style: StoryText.sans(size: 12, color: C.textMuted, style: FontStyle.italic),
                     ),
                   ],
                 ),
               ),
               Switch(
                 value: ai.enabled && ai.hasApiKey,
-                onChanged: ai.hasApiKey
-                    ? (v) => ctrl.setEnabled(v)
-                    : null,
+                onChanged: ai.hasApiKey ? (v) => ctrl.setEnabled(v) : null,
                 activeColor: C.accent,
               ),
             ],
@@ -554,8 +553,7 @@ class _AiModeCard extends ConsumerWidget {
               children: [
                 Icon(Icons.key_rounded, size: 14, color: C.textMuted),
                 const SizedBox(width: 6),
-                Text('Clé : ${ai.apiKeyPreview}',
-                    style: StoryText.mono(size: 11, color: C.textMuted)),
+                Text('Clé : ${ai.apiKeyPreview}', style: StoryText.mono(size: 11, color: C.textMuted)),
                 const Spacer(),
                 TextButton(
                   onPressed: () => _confirmClearKey(context, ref),
@@ -564,8 +562,7 @@ class _AiModeCard extends ConsumerWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     minimumSize: const Size(0, 32),
                   ),
-                  child: Text('Effacer',
-                      style: StoryText.sans(size: 11)),
+                  child: Text('Effacer', style: StoryText.sans(size: 11)),
                 ),
                 TextButton(
                   onPressed: () => _openApiKeyDialog(context, ref),
@@ -574,8 +571,7 @@ class _AiModeCard extends ConsumerWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     minimumSize: const Size(0, 32),
                   ),
-                  child:
-                      Text('Modifier', style: StoryText.sans(size: 11)),
+                  child: Text('Modifier', style: StoryText.sans(size: 11)),
                 ),
               ],
             ),
@@ -596,10 +592,7 @@ class _AiModeCard extends ConsumerWidget {
             const SizedBox(height: 8),
             Text(
               '🔒 Ta clé est stockée dans le Keystore Android, jamais envoyée à personne d\'autre qu\'Anthropic.',
-              style: StoryText.sans(
-                  size: 10,
-                  color: C.textDim,
-                  style: FontStyle.italic),
+              style: StoryText.sans(size: 10, color: C.textDim, style: FontStyle.italic),
             ),
           ],
         ],
@@ -612,20 +605,16 @@ class _AiModeCard extends ConsumerWidget {
     final result = await showDialog<String>(
       context: context,
       builder: (dialogCtx) {
-        bool obscure = false; // Démarre visible pour faciliter le collage
+        bool obscure = false;
         return StatefulBuilder(builder: (ctx, setS) {
           return AlertDialog(
             backgroundColor: C.surface,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             title: Row(
               children: [
-                Icon(Icons.auto_awesome_rounded,
-                    color: C.accent, size: 20),
+                Icon(Icons.auto_awesome_rounded, color: C.accent, size: 20),
                 const SizedBox(width: 10),
-                Text('Clé API Claude',
-                    style: StoryText.serif(
-                        size: 18, weight: FontWeight.w700)),
+                Text('Clé API Claude', style: StoryText.serif(size: 18, weight: FontWeight.w700)),
               ],
             ),
             content: Column(
@@ -634,10 +623,7 @@ class _AiModeCard extends ConsumerWidget {
               children: [
                 Text(
                   'Récupère ta clé sur console.anthropic.com → API Keys',
-                  style: StoryText.sans(
-                      size: 12,
-                      color: C.textMuted,
-                      style: FontStyle.italic),
+                  style: StoryText.sans(size: 12, color: C.textMuted, style: FontStyle.italic),
                 ),
                 const SizedBox(height: 12),
                 TextField(
@@ -661,54 +647,41 @@ class _AiModeCard extends ConsumerWidget {
                     ),
                     suffixIcon: IconButton(
                       icon: Icon(
-                          obscure
-                              ? Icons.visibility_outlined
-                              : Icons.visibility_off_outlined,
-                          color: C.textMuted),
+                        obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                        color: C.textMuted,
+                      ),
                       onPressed: () => setS(() => obscure = !obscure),
                     ),
                   ),
                 ),
                 const SizedBox(height: 10),
-                // Bouton explicite "Coller depuis le presse-papier"
                 Row(
                   children: [
                     OutlinedButton.icon(
                       style: OutlinedButton.styleFrom(
                         foregroundColor: C.accent,
-                        side: BorderSide(
-                            color: C.accent.withValues(alpha: 0.4)),
-                        padding:
-                            const EdgeInsets.symmetric(horizontal: 12),
+                        side: BorderSide(color: C.accent.withValues(alpha: 0.4)),
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
                       ),
                       onPressed: () async {
-                        final data = await Clipboard.getData(
-                            Clipboard.kTextPlain);
+                        final data = await Clipboard.getData(Clipboard.kTextPlain);
                         final text = data?.text?.trim() ?? '';
                         if (text.isEmpty) {
                           ScaffoldMessenger.of(ctx).showSnackBar(
-                            const SnackBar(
-                                content: Text(
-                                    'Presse-papier vide')),
+                            const SnackBar(content: Text('Presse-papier vide')),
                           );
                           return;
                         }
                         ctrl.text = text;
-                        ctrl.selection = TextSelection.fromPosition(
-                            TextPosition(offset: text.length));
+                        ctrl.selection = TextSelection.fromPosition(TextPosition(offset: text.length));
                       },
-                      icon: const Icon(Icons.content_paste_rounded,
-                          size: 16),
+                      icon: const Icon(Icons.content_paste_rounded, size: 16),
                       label: const Text('Coller'),
                     ),
                     const SizedBox(width: 8),
                     TextButton(
-                      onPressed: () {
-                        ctrl.clear();
-                      },
-                      style: TextButton.styleFrom(
-                        foregroundColor: C.textMuted,
-                      ),
+                      onPressed: () => ctrl.clear(),
+                      style: TextButton.styleFrom(foregroundColor: C.textMuted),
                       child: const Text('Effacer'),
                     ),
                   ],
@@ -718,17 +691,11 @@ class _AiModeCard extends ConsumerWidget {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(dialogCtx),
-                child: Text('Annuler',
-                    style:
-                        StoryText.sans(size: 13, color: C.textMuted)),
+                child: Text('Annuler', style: StoryText.sans(size: 13, color: C.textMuted)),
               ),
               FilledButton(
-                style: FilledButton.styleFrom(
-                  backgroundColor: C.accent,
-                  foregroundColor: Colors.white,
-                ),
-                onPressed: () =>
-                    Navigator.pop(dialogCtx, ctrl.text.trim()),
+                style: FilledButton.styleFrom(backgroundColor: C.accent, foregroundColor: Colors.white),
+                onPressed: () => Navigator.pop(dialogCtx, ctrl.text.trim()),
                 child: const Text('Enregistrer'),
               ),
             ],
@@ -751,18 +718,18 @@ class _AiModeCard extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: C.surface,
-        title: Text('Effacer la clé API ?',
-            style: StoryText.serif(size: 16, weight: FontWeight.w700)),
+        title: Text('Effacer la clé API ?', style: StoryText.serif(size: 16, weight: FontWeight.w700)),
         content: Text(
-            'Cette action est irréversible. Tu pourras toujours en remettre une nouvelle.',
-            style: StoryText.sans(size: 13, color: C.textMuted)),
+          'Cette action est irréversible. Tu pourras toujours en remettre une nouvelle.',
+          style: StoryText.sans(size: 13, color: C.textMuted),
+        ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Annuler')),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Annuler'),
+          ),
           FilledButton(
-            style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFFFF4466)),
+            style: FilledButton.styleFrom(backgroundColor: const Color(0xFFFF4466)),
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text('Effacer'),
           ),

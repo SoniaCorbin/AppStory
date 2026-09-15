@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../models/page_document.dart';
+import '../services/sync_service.dart';
 
 class PagesNotifier extends StateNotifier<List<PageDocument>> {
   final Box<PageDocument> _box;
@@ -23,6 +24,7 @@ class PagesNotifier extends StateNotifier<List<PageDocument>> {
       updatedAt: now,
     );
     await _box.put(page.id, page);
+    await SyncService.syncPage(page);
     _load();
   }
 
@@ -35,12 +37,14 @@ class PagesNotifier extends StateNotifier<List<PageDocument>> {
         updatedAt: DateTime.now(),
       );
       await _box.put(id, updated);
+      await SyncService.syncPage(updated);
       _load();
     }
   }
 
   Future<void> deletePage(String id) async {
     await _box.delete(id);
+    await SyncService.deletePage(id);
     _load();
   }
 }

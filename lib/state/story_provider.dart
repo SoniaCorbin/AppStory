@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../models/story.dart';
 import '../storage/story_record.dart';
+import '../services/sync_service.dart';
 
 final storyProvider =
     StateNotifierProvider<StoryNotifier, List<Story>>((ref) {
@@ -25,6 +26,7 @@ class StoryNotifier extends StateNotifier<List<Story>> {
     state = [...state, story];
     final record = StoryRecord.fromModel(story);
     await _box.put(story.id, record);
+    await SyncService.syncStory(story); // sync Supabase
   }
 
   Future<void> updateStory(Story story) async {
@@ -33,11 +35,13 @@ class StoryNotifier extends StateNotifier<List<Story>> {
         if (s.id == story.id) story else s
     ];
     await _box.put(story.id, StoryRecord.fromModel(story));
+    await SyncService.syncStory(story); // sync Supabase
   }
 
   Future<void> deleteStory(int id) async {
     state = state.where((s) => s.id != id).toList();
     await _box.delete(id);
+    await SyncService.deleteStory(id); // sync Supabase
   }
 
   /// Renvoie l'histoire la plus récente, ou null si vide.
