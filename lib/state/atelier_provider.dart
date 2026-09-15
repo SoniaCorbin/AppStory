@@ -10,6 +10,7 @@ import '../services/story_generator.dart';
 import 'ai_settings_provider.dart';
 import 'atelier_state.dart';
 import 'story_provider.dart';
+import '../services/auth_service.dart';
 
 final atelierProvider = NotifierProvider<AtelierController, AtelierState>(
   AtelierController.new,
@@ -127,6 +128,17 @@ class AtelierController extends Notifier<AtelierState> {
     final ai = ref.read(aiSettingsProvider);
 
     if (ai.enabled && ai.hasApiKey) {
+      // Vérifier le quota freemium (5 générations/mois)
+      final canGen = await AuthService.canGenerate();
+      if (!canGen) {
+        state = state.copyWith(
+          generating: false,
+          generated: false,
+          error: 'Quota atteint — 5 générations IA gratuites/mois. Passe en Premium pour continuer !',
+        );
+        return;
+      }
+
       // Mode IA : appel à Claude
       try {
         final apiKey = await SecureStorageService.getApiKey();
@@ -137,8 +149,9 @@ class AtelierController extends Notifier<AtelierState> {
           blocks: state.assembled,
           apiKey: apiKey,
         );
+        // Enregistrer la génération dans Supabase
+        await AuthService.recordGeneration();
       } catch (e) {
-        // Fallback : on utilise la génération locale et on note l'erreur
         generated = StoryGenerator.generate(state.assembled);
         state = state.copyWith(
           generating: false,
