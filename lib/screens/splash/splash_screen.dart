@@ -5,6 +5,7 @@ import '../../core/routing/routes.dart';
 import '../../core/theme/story_text_styles.dart';
 import '../../widgets/backgrounds/grid_bg.dart';
 import '../../widgets/backgrounds/mesh_blobs.dart';
+import '../../services/auth_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -28,14 +29,20 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   void _enterApp() {
-    // Vérifie si l'utilisateur a déjà fait l'onboarding
     final settings = Hive.box('settings');
     final onboarded = settings.get('onboarded', defaultValue: false) as bool;
 
-    if (onboarded) {
+    if (!onboarded) {
+      Navigator.of(context).pushReplacementNamed(Routes.onboarding);
+      return;
+    }
+
+    // Vérifie si l'utilisateur est connecté à Supabase
+    final isLoggedIn = AuthService.isLoggedIn;
+    if (isLoggedIn) {
       Navigator.of(context).pushReplacementNamed(Routes.shell);
     } else {
-      Navigator.of(context).pushReplacementNamed(Routes.onboarding);
+      Navigator.of(context).pushReplacementNamed(Routes.auth);
     }
   }
 

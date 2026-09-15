@@ -53,7 +53,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final settings = Hive.box('settings');
     await settings.put('onboarded', true);
     if (!mounted) return;
-    Navigator.of(context).pushReplacementNamed(Routes.shell);
+    Navigator.of(context).pushReplacementNamed(Routes.auth);
   }
 
   void _next() {
