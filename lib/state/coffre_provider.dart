@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../models/coffre_item.dart';
 import '../storage/coffre_record.dart';
+import '../services/sync_service.dart';
 
 final coffreProvider =
     StateNotifierProvider<CoffreNotifier, List<CoffreItem>>((ref) {
@@ -25,6 +26,7 @@ class CoffreNotifier extends StateNotifier<List<CoffreItem>> {
   Future<void> addItem(CoffreItem item) async {
     state = [...state, item];
     await _box.put(item.id, CoffreRecord.fromModel(item));
+    await SyncService.syncCoffreItem(item);
   }
 
   Future<void> updateItem(CoffreItem item) async {
@@ -33,11 +35,13 @@ class CoffreNotifier extends StateNotifier<List<CoffreItem>> {
         if (i.id == item.id) item else i
     ];
     await _box.put(item.id, CoffreRecord.fromModel(item));
+    await SyncService.syncCoffreItem(item);
   }
 
   Future<void> deleteItem(int id) async {
     state = state.where((i) => i.id != id).toList();
     await _box.delete(id);
+    await SyncService.deleteCoffreItem(id);
   }
 
   Future<void> togglePin(int id) async {
