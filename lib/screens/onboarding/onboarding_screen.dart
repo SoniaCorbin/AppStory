@@ -20,19 +20,32 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     _Slide(
       icon: '✦',
       title: 'Bienvenue dans StoryBlocks',
-      desc: "Le laboratoire pour transformer une étincelle d'idée en récit.",
+      desc: "Ton atelier d'écriture créative. Assemble des blocs. Raconte des histoires.",
     ),
     _Slide(
       icon: '⚗',
       title: "L'Atelier",
-      desc:
-          "Assemble des blocs narratifs (ton, personnage, lieu, conflit…) et génère ton amorce.",
+      desc: "Combine des blocs narratifs — ton, personnage, lieu, conflit — et génère une amorce narrative unique.",
     ),
     _Slide(
-      icon: '◈',
-      title: 'Le Coffre & l\'Agenda',
-      desc:
-          "Garde tes idées en sécurité dans le Coffre, planifie tes sessions d'écriture dans l'Agenda.",
+      icon: '💎',
+      title: 'Le Coffre & les Idées',
+      desc: "Garde tes notes et idées en sécurité. Chiffrées sur ton appareil, accessibles hors ligne.",
+    ),
+    _Slide(
+      icon: '📄',
+      title: 'Mes Pages',
+      desc: "Écris librement. Fusionne plusieurs pages pour créer une histoire complète.",
+    ),
+    _Slide(
+      icon: '🖼️',
+      title: 'La Galerie',
+      desc: "Ajoute des images d'inspiration. Retrouve l'ambiance de ton histoire en un coup d'œil.",
+    ),
+    _Slide(
+      icon: '🚀',
+      title: 'Prêt à écrire ?',
+      desc: "Ton atelier t'attend. Chaque grande histoire commence par un premier bloc.",
     ),
   ];
 

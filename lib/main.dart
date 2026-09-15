@@ -13,10 +13,13 @@ import 'storage/story_record.dart';
 import 'models/idea_block.dart';
 import 'models/gallery_item.dart';
 import 'models/page_document.dart';
+import 'package:flutter/services.dart';
 
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
   // ---------- HIVE INIT ----------
   await Hive.initFlutter();
