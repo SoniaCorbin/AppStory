@@ -71,7 +71,6 @@ class AtelierController extends Notifier<AtelierState> {
   }
 
   void addBlock(BlockType type) {
-    if (state.assembled.any((b) => b.type == type)) return;
     state = state.copyWith(
       assembled: [
         ...state.assembled,
@@ -85,10 +84,6 @@ class AtelierController extends Notifier<AtelierState> {
   /// Ajoute un bloc avec une valeur précise (depuis la bibliothèque).
   /// Si le type existe déjà, on remplace simplement la valeur.
   void addBlockWithValue(BlockType type, String value) {
-    if (state.assembled.any((b) => b.type == type)) {
-      updateBlockValue(type, value);
-      return;
-    }
     state = state.copyWith(
       assembled: [
         ...state.assembled,
@@ -99,21 +94,22 @@ class AtelierController extends Notifier<AtelierState> {
     );
   }
 
-  void removeBlock(BlockType type) {
+  void removeBlockAt(int index) {
+    final newList = List<AssembledBlock>.from(state.assembled);
+    newList.removeAt(index);
     state = state.copyWith(
-      assembled: state.assembled.where((b) => b.type != type).toList(),
+      assembled: newList,
       generated: false,
       story: '',
     );
   }
 
   /// Met à jour la valeur d'un bloc déjà assemblé.
-  void updateBlockValue(BlockType type, String newValue) {
+  void updateBlockValueAt(int index, String newValue) {
+    final newList = List<AssembledBlock>.from(state.assembled);
+    newList[index] = newList[index].copyWith(value: newValue);
     state = state.copyWith(
-      assembled: [
-        for (final b in state.assembled)
-          if (b.type == type) b.copyWith(value: newValue) else b,
-      ],
+      assembled: newList,
       generated: false,
       story: '',
     );

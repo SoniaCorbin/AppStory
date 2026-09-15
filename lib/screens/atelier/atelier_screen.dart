@@ -151,7 +151,7 @@ class AtelierScreen extends ConsumerWidget {
                         for (final type in BlockTypeX.all)
                           BlockChip(
                             type: type,
-                            selected: st.assembled.any((b) => b.type == type),
+                            selected: false,
                             onPressed: () =>
                                 _openLibraryPicker(context, ref, type),
                           ),
@@ -200,11 +200,9 @@ class AtelierScreen extends ConsumerWidget {
                                 for (int i = 0; i < st.assembled.length; i++) ...[
                                   AssembledBlockTile(
                                     block: st.assembled[i],
-                                    onRemove: () => ctrl
-                                        .removeBlock(st.assembled[i].type),
+                                    onRemove: () => ctrl.removeBlockAt(i),
                                     onValueChanged: (newValue) =>
-                                        ctrl.updateBlockValue(
-                                            st.assembled[i].type, newValue),
+                                        ctrl.updateBlockValueAt(i, newValue),
                                   ),
                                   if (i != st.assembled.length - 1)
                                     const SizedBox(height: 10),
@@ -405,7 +403,7 @@ class _LibraryPickerSheet extends ConsumerWidget {
                             .read(atelierProvider)
                             .assembled
                             .any((b) => b.type == type)) {
-                          atelier.updateBlockValue(type, entry.value);
+                          atelier.addBlockWithValue(type, entry.value);
                         } else {
                           atelier.addBlockWithValue(type, entry.value);
                         }
