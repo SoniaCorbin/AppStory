@@ -78,4 +78,37 @@ class SyncService{
     if (!AuthService.isLoggedIn) return;
     await _client.from('coffre_items').delete().eq('id', id);
   }
-}
+  // ─── RESTAURATION ──────────────────────────────────────────
+
+  static Future<List<Map<String, dynamic>>> fetchStories() async {
+    if (!AuthService.isLoggedIn) return [];
+    final userId = AuthService.currentUser!.id;
+    final response = await _client
+        .from('stories')
+        .select()
+        .eq('user_id', userId)
+        .order('updated_at', ascending: false);
+    return List<Map<String, dynamic>>.from(response);
+  }
+
+  static Future<List<Map<String, dynamic>>> fetchPages() async {
+    if (!AuthService.isLoggedIn) return [];
+    final userId = AuthService.currentUser!.id;
+    final response = await _client
+        .from('pages')
+        .select()
+        .eq('user_id', userId)
+        .order('updated_at', ascending: false);
+    return List<Map<String, dynamic>>.from(response);
+  }
+
+  static Future<List<Map<String, dynamic>>> fetchCoffreItems() async {
+    if (!AuthService.isLoggedIn) return [];
+    final userId = AuthService.currentUser!.id;
+    final response = await _client
+        .from('coffre_items')
+        .select()
+        .eq('user_id', userId);
+    return List<Map<String, dynamic>>.from(response);
+  }
+  }

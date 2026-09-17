@@ -5,6 +5,7 @@ import '../../core/theme/story_text_styles.dart';
 import '../../services/auth_service.dart';
 import '../../widgets/backgrounds/grid_bg.dart';
 import '../../widgets/backgrounds/mesh_blobs.dart';
+import '../../services/restore_service.dart';
 
 class AuthScreen extends StatefulWidget {
   final VoidCallback onSuccess;
@@ -41,6 +42,8 @@ class _AuthScreenState extends State<AuthScreen> {
           email: _emailCtrl.text.trim(),
           password: _passwordCtrl.text.trim(),
         );
+        // Restaurer les données depuis Supabase après login
+        await RestoreService.restoreAll();
       } else {
         await AuthService.signUp(
           email: _emailCtrl.text.trim(),
