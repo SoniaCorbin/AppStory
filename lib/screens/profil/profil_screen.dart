@@ -18,6 +18,7 @@ import '../atelier/widgets/ham_btn.dart';
 import 'widgets/progress_ring.dart';
 import '../badges/badges_screen.dart';
 import '../../state/profile_provider.dart';
+import '../premium/premium_screen.dart';
 
 class ProfilScreen extends ConsumerStatefulWidget {
   final VoidCallback onMenu;
@@ -333,6 +334,15 @@ class _ProfilScreenState extends ConsumerState<ProfilScreen> {
                     const SizedBox(height: 10),
 
                     _AiModeCard(),
+                    const SizedBox(height: 10),
+
+                    _ActionRow(
+                      title: '✦ Passer au Premium',
+                      subtitle: 'Générations IA illimitées · 2,99\$/mois',
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const PremiumScreen()),
+                      ),
+                    ),
                     const SizedBox(height: 10),
 
                     _ActionRow(

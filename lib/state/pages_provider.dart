@@ -24,7 +24,9 @@ class PagesNotifier extends StateNotifier<List<PageDocument>> {
       updatedAt: now,
     );
     await _box.put(page.id, page);
-    await SyncService.syncPage(page);
+    try {
+      await SyncService.syncPage(page);
+    } catch (_) {}
     _load();
   }
 
@@ -37,14 +39,18 @@ class PagesNotifier extends StateNotifier<List<PageDocument>> {
         updatedAt: DateTime.now(),
       );
       await _box.put(id, updated);
-      await SyncService.syncPage(updated);
+      try {
+        await SyncService.syncPage(updated);
+      } catch (_) {}
       _load();
     }
   }
 
   Future<void> deletePage(String id) async {
     await _box.delete(id);
-    await SyncService.deletePage(id);
+    try {
+      await SyncService.deletePage(id);
+    } catch (_) {}
     _load();
   }
 }
@@ -54,6 +60,6 @@ final pagesBoxProvider = Provider<Box<PageDocument>>((ref) {
 });
 
 final pagesProvider =
-    StateNotifierProvider<PagesNotifier, List<PageDocument>>((ref) {
+StateNotifierProvider<PagesNotifier, List<PageDocument>>((ref) {
   return PagesNotifier(ref.watch(pagesBoxProvider));
 });

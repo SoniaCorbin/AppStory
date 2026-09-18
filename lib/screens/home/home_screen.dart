@@ -10,6 +10,7 @@ import '../../widgets/backgrounds/grid_bg.dart';
 import '../../widgets/backgrounds/mesh_blobs.dart';
 import 'widgets/streak_banner.dart';
 import 'widgets/story_card.dart';
+import '../../state/profile_provider.dart';
 
 class HomeScreen extends ConsumerWidget {
   final VoidCallback onMenu;
@@ -67,6 +68,7 @@ class HomeScreen extends ConsumerWidget {
                   onMenu: onMenu,
                   onSearch: onSearch,
                   dateLabel: _todayLabel(),
+                  userName: ref.watch(profileProvider),
                 ),
               ),
 
@@ -207,11 +209,13 @@ class _HomeHeader extends StatelessWidget {
   final VoidCallback onMenu;
   final VoidCallback onSearch;
   final String dateLabel;
+  final String userName;
 
   const _HomeHeader({
     required this.onMenu,
     required this.onSearch,
     required this.dateLabel,
+    required this.userName,
   });
 
   @override
@@ -270,7 +274,7 @@ class _HomeHeader extends StatelessWidget {
         const SizedBox(height: 14),
         Text('Bonjour,',
             style: StoryText.serif(size: 26, weight: FontWeight.w700)),
-        Text('Écrivain ✦',
+        Text('$userName ✦',
             style: StoryText.serif(
                 size: 26,
                 weight: FontWeight.w400,
