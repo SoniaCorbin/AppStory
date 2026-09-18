@@ -54,7 +54,6 @@ class _PagesScreenState extends ConsumerState<PagesScreen> {
     final selected = pages.where((p) => _selected.contains(p.id)).toList()
       ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
-    // Titre de la fusion
     final titleCtrl = TextEditingController(
         text: selected.map((p) => p.title).join(' + '));
 
@@ -103,7 +102,6 @@ class _PagesScreenState extends ConsumerState<PagesScreen> {
 
     if (confirmed != true) return;
 
-    // Combiner le contenu
     final combinedContent = selected
         .map((p) => '## ${p.title}\n\n${p.content}')
         .join('\n\n---\n\n');
@@ -155,8 +153,6 @@ class _PagesScreenState extends ConsumerState<PagesScreen> {
           child: Column(
             children: [
               const SizedBox(height: 56),
-
-              // Header
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
                 child: Column(
@@ -169,36 +165,31 @@ class _PagesScreenState extends ConsumerState<PagesScreen> {
                             ? TextButton(
                           onPressed: _cancelSelection,
                           child: Text('Annuler',
-                              style: StoryText.mono(
-                                  size: 12, color: C.textMuted)),
+                              style: StoryText.mono(size: 12, color: C.textMuted)),
                         )
                             : HamBtn(onMenu: widget.onMenu),
                         Row(
                           children: [
                             if (_selectionMode && _selected.length >= 2)
                               IconButton(
-                                icon: Icon(Icons.merge_rounded,
-                                    color: C.primary),
+                                icon: Icon(Icons.merge_rounded, color: C.primary),
                                 tooltip: 'Fusionner',
                                 onPressed: () => _mergePages(pages),
                               ),
                             if (!_selectionMode)
                               IconButton(
                                 icon: Icon(Icons.add, color: C.primary),
-                                onPressed: () =>
-                                    _openEditor(context, ref, null),
+                                onPressed: () => _openEditor(context, ref, null),
                               ),
                           ],
                         ),
                       ],
                     ),
                     Text('✦ MES PAGES',
-                        style: StoryText.mono(
-                            size: 10, color: C.primary, letterSpacing: 3)),
+                        style: StoryText.mono(size: 10, color: C.primary, letterSpacing: 3)),
                     const SizedBox(height: 4),
                     Text('Mes Pages',
-                        style: StoryText.serif(
-                            size: 28, weight: FontWeight.w700)),
+                        style: StoryText.serif(size: 28, weight: FontWeight.w700)),
                     Text(
                       _selectionMode
                           ? '${_selected.length} sélectionnée${_selected.length != 1 ? 's' : ''}'
@@ -211,14 +202,11 @@ class _PagesScreenState extends ConsumerState<PagesScreen> {
                   ],
                 ),
               ),
-
-              // Liste
               Expanded(
                 child: pages.isEmpty
                     ? _buildEmptyState()
                     : ListView.builder(
-                  padding:
-                  const EdgeInsets.fromLTRB(20, 8, 20, 120),
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 120),
                   itemCount: pages.length,
                   itemBuilder: (_, i) => _PageTile(
                     page: pages[i],
@@ -260,10 +248,7 @@ class _PagesScreenState extends ConsumerState<PagesScreen> {
               style: StoryText.serif(size: 18, weight: FontWeight.w600)),
           const SizedBox(height: 4),
           Text('Appuie sur + pour commencer à écrire !',
-              style: StoryText.sans(
-                  size: 13,
-                  color: C.textMuted,
-                  style: FontStyle.italic)),
+              style: StoryText.sans(size: 13, color: C.textMuted, style: FontStyle.italic)),
           const SizedBox(height: 8),
           Text('Maintiens une page pour la sélectionner et fusionner.',
               style: StoryText.mono(size: 10, color: C.textDim),
@@ -306,9 +291,7 @@ class _PageTile extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: selected
-                ? C.primary.withValues(alpha: 0.12)
-                : C.surface,
+            color: selected ? C.primary.withValues(alpha: 0.12) : C.surface,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: selected
@@ -323,9 +306,7 @@ class _PageTile extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(right: 12),
                   child: Icon(
-                    selected
-                        ? Icons.check_circle_rounded
-                        : Icons.circle_outlined,
+                    selected ? Icons.check_circle_rounded : Icons.circle_outlined,
                     color: selected ? C.primary : C.textDim,
                     size: 22,
                   ),
@@ -336,8 +317,7 @@ class _PageTile extends StatelessWidget {
                   children: [
                     Text(
                       page.title,
-                      style: StoryText.serif(
-                          size: 16, weight: FontWeight.w700),
+                      style: StoryText.serif(size: 16, weight: FontWeight.w700),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -358,8 +338,7 @@ class _PageTile extends StatelessWidget {
               ),
               if (!selectionMode)
                 IconButton(
-                  icon: Icon(Icons.delete_outline,
-                      size: 18, color: Colors.redAccent),
+                  icon: Icon(Icons.delete_outline, size: 18, color: Colors.redAccent),
                   onPressed: onDelete,
                 ),
             ],
@@ -385,6 +364,7 @@ class _PageEditorScreen extends ConsumerStatefulWidget {
 class _PageEditorScreenState extends ConsumerState<_PageEditorScreen> {
   late TextEditingController _titleCtrl;
   late TextEditingController _contentCtrl;
+  bool _saving = false;
   bool _hasChanges = false;
 
   @override
@@ -404,16 +384,22 @@ class _PageEditorScreenState extends ConsumerState<_PageEditorScreen> {
   }
 
   Future<void> _save() async {
-    final title = _titleCtrl.text.trim();
-    final content = _contentCtrl.text.trim();
-    if (widget.page == null) {
-      await ref.read(pagesProvider.notifier).addPage(title, content);
-    } else {
-      await ref
-          .read(pagesProvider.notifier)
-          .updatePage(widget.page!.id, title, content);
+    if (_saving) return;
+    setState(() => _saving = true);
+    try {
+      final title = _titleCtrl.text.trim();
+      final content = _contentCtrl.text.trim();
+      if (widget.page == null) {
+        await ref.read(pagesProvider.notifier).addPage(title, content);
+      } else {
+        await ref
+            .read(pagesProvider.notifier)
+            .updatePage(widget.page!.id, title, content);
+      }
+      if (mounted) Navigator.pop(context);
+    } finally {
+      if (mounted) setState(() => _saving = false);
     }
-    if (mounted) Navigator.pop(context);
   }
 
   @override
@@ -425,19 +411,24 @@ class _PageEditorScreenState extends ConsumerState<_PageEditorScreen> {
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.close, color: C.text),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () async {
+            if (_hasChanges) await _save();
+            else if (mounted) Navigator.pop(context);
+          },
         ),
         title: Text(
           widget.page == null ? 'Nouvelle page' : 'Modifier',
           style: StoryText.serif(size: 17, weight: FontWeight.w700),
         ),
         actions: [
-          if (_hasChanges)
-            TextButton(
-              onPressed: _save,
-              child: Text('Sauver',
-                  style: StoryText.mono(size: 13, color: C.primary)),
+          TextButton(
+            onPressed: _saving ? null : _save,
+            child: Text(
+              'Sauver',
+              style: StoryText.mono(
+                  size: 13, color: _saving ? C.textDim : C.primary),
             ),
+          ),
         ],
       ),
       body: Padding(
@@ -450,9 +441,7 @@ class _PageEditorScreenState extends ConsumerState<_PageEditorScreen> {
               decoration: InputDecoration(
                 hintText: 'Titre…',
                 hintStyle: StoryText.serif(
-                    size: 22,
-                    weight: FontWeight.w700,
-                    color: C.textDim),
+                    size: 22, weight: FontWeight.w700, color: C.textDim),
                 border: InputBorder.none,
               ),
             ),
@@ -469,9 +458,7 @@ class _PageEditorScreenState extends ConsumerState<_PageEditorScreen> {
                 decoration: InputDecoration(
                   hintText: 'Commence à écrire…',
                   hintStyle: StoryText.sans(
-                      size: 16,
-                      color: C.textDim,
-                      style: FontStyle.italic),
+                      size: 16, color: C.textDim, style: FontStyle.italic),
                   border: InputBorder.none,
                 ),
               ),
