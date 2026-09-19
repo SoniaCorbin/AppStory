@@ -1,4 +1,4 @@
-package com.storyblock.app
+package com.storyblock.ca
 
 import io.flutter.embedding.android.FlutterActivity
 
