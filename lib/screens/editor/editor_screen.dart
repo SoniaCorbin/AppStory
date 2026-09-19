@@ -25,6 +25,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
   late List<TextEditingController> _controllers;
   late TextEditingController _titleController;
   late TextEditingController _hookController;
+  late int _progress;
 
   @override
   void initState() {
@@ -35,6 +36,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     ];
     _titleController = TextEditingController(text: widget.story.title);
     _hookController = TextEditingController(text: widget.story.hook);
+    _progress = widget.story.progress;
   }
 
   @override
@@ -60,6 +62,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
       blocks: updatedBlocks,
       hook: _hookController.text.trim(),
       lastEdit: 'à l\'instant',
+      progress: _progress,
     );
 
     // Sauvegarde dans Hive via le provider
@@ -214,6 +217,41 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                   ),
                 ),
 
+                // Progression
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: C.surface,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('PROGRESSION',
+                                style: StoryText.mono(size: 10, color: C.textDim, letterSpacing: 2)),
+                            Text('$_progress%',
+                                style: StoryText.mono(size: 12, color: C.primary)),
+                          ],
+                        ),
+                        Slider(
+                          value: _progress.toDouble(),
+                          min: 0,
+                          max: 100,
+                          divisions: 10,
+                          activeColor: C.primary,
+                          inactiveColor: C.surface3,
+                          onChanged: (val) => setState(() => _progress = val.round()),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
                   child: Text(
