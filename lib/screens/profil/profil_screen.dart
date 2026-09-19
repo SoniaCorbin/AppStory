@@ -19,6 +19,8 @@ import 'widgets/progress_ring.dart';
 import '../badges/badges_screen.dart';
 import '../../state/profile_provider.dart';
 import '../premium/premium_screen.dart';
+import '../stats/stats_screen.dart';
+import '../coffre/coffre_screen.dart';
 
 class ProfilScreen extends ConsumerStatefulWidget {
   final VoidCallback onMenu;
@@ -244,11 +246,33 @@ class _ProfilScreenState extends ConsumerState<ProfilScreen> {
                     Expanded(
                       child: Column(
                         children: [
-                          _MiniStat(n: '$projects', label: 'Projets', color: C.primary),
+                          GestureDetector(
+                            onTap: () => Navigator.of(context).pushNamedAndRemoveUntil(
+                                Routes.shell, (route) => false),
+                            child: _MiniStat(n: '$projects', label: 'Projets', color: C.primary),
+                          ),
                           const SizedBox(height: 10),
-                          _MiniStat(n: '$blocks', label: 'Blocs', color: C.secondary),
+                          GestureDetector(
+                            onTap: () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (ctx) => Scaffold(
+                                  body: StatsScreen(onMenu: () => Navigator.of(ctx).pop()),
+                                ),
+                              ),
+                            ),
+                            child: _MiniStat(n: '$blocks', label: 'Blocs', color: C.secondary),
+                          ),
                           const SizedBox(height: 10),
-                          _MiniStat(n: '$notes', label: 'Notes', color: C.green),
+                          GestureDetector(
+                            onTap: () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (ctx) => Scaffold(
+                                  body: CoffreScreen(onMenu: () => Navigator.of(ctx).pop()),
+                                ),
+                              ),
+                            ),
+                            child: _MiniStat(n: '$notes', label: 'Notes', color: C.green),
+                          ),
                         ],
                       ),
                     ),
