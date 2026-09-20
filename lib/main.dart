@@ -16,12 +16,16 @@ import 'models/page_document.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'services/billing_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: '.env');
+
   await Supabase.initialize(
-    url: 'https://hdovamuyacpyzhztafzk.supabase.co',
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhkb3ZhbXV5YWNweXpoenRhZnprIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk0NTU1NzAsImV4cCI6MjEwNTAzMTU3MH0.FCF5m1hozFkNDbQaDPc6Rcg_wZwjTP08iyw6xoUXmhY',
+    url: dotenv.env['SUPABASE_URL']!,
+    anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
   );
 
   await BillingService.init();
