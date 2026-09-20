@@ -44,6 +44,7 @@ class _AuthScreenState extends State<AuthScreen> {
         );
         // Restaurer les données depuis Supabase après login
         await RestoreService.restoreAll();
+        await AuthService.syncProfileToLocal();
       } else {
         await AuthService.signUp(
           email: _emailCtrl.text.trim(),

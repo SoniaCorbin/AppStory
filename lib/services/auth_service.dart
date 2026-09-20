@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class AuthService {
   static final _client = Supabase.instance.client;
@@ -62,6 +63,16 @@ class AuthService {
     return response;
   }
 
+   // Sync le nom du profil Supabase → Hive local
+  static Future<void> syncProfileToLocal() async {
+    try {
+      final profile = await getProfile();
+      if (profile != null && profile['name'] != null) {
+        final box = Hive.box('settings');
+        await box.put('profile_name', profile['name']);
+      }
+    } catch (_) {}
+  }
   // Mettre à jour le nom
   static Future<void> updateName(String name) async {
     if (currentUser == null) return;
