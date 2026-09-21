@@ -7,7 +7,6 @@ import 'screens/splash/splash_screen.dart';
 import 'screens/shell/shell_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/auth/auth_screen.dart';
-import '../../widgets/session_guard.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
@@ -32,7 +31,6 @@ class StoryBlocksApp extends ConsumerWidget {
               .pushReplacementNamed(Routes.shell),
         ),
         Routes.shell: (_) => const ShellScreen(),
-        Routes.shell: (_) => SessionGuard(child: ShellScreen()),
       },
     );
   }
