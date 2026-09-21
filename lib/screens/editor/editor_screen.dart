@@ -26,6 +26,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
   late TextEditingController _titleController;
   late TextEditingController _hookController;
   late int _progress;
+  late TextEditingController _notesController;
 
   @override
   void initState() {
@@ -37,6 +38,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     _titleController = TextEditingController(text: widget.story.title);
     _hookController = TextEditingController(text: widget.story.hook);
     _progress = widget.story.progress;
+    _notesController = TextEditingController(text: widget.story.notes);
   }
 
   @override
@@ -46,6 +48,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     }
     _titleController.dispose();
     _hookController.dispose();
+    _notesController.dispose();
     super.dispose();
   }
 
@@ -63,6 +66,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
       hook: _hookController.text.trim(),
       lastEdit: 'à l\'instant',
       progress: _progress,
+      notes: _notesController.text.trim(),
     );
 
     // Sauvegarde dans Hive via le provider
@@ -247,6 +251,40 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                           activeColor: C.primary,
                           inactiveColor: C.surface3,
                           onChanged: (val) => setState(() => _progress = val.round()),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                // Notes
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: C.surface,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('✎ NOTES',
+                            style: StoryText.mono(size: 10, color: C.textDim, letterSpacing: 2.2)),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: _notesController,
+                          minLines: 2,
+                          maxLines: 6,
+                          style: StoryText.sans(size: 13, color: C.text).copyWith(height: 1.6),
+                          decoration: InputDecoration(
+                            hintText: 'Idées rapides, rappels, questions en suspens…',
+                            hintStyle: StoryText.sans(size: 13, color: C.textDim, style: FontStyle.italic),
+                            border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                            contentPadding: EdgeInsets.zero,
+                          ),
                         ),
                       ],
                     ),

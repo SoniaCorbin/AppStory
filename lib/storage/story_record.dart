@@ -32,6 +32,9 @@ class StoryRecord extends HiveObject {
   @HiveField(7)
   String hook;
 
+  @HiveField(8)
+  String notes;
+
   StoryRecord({
     required this.id,
     required this.title,
@@ -41,6 +44,7 @@ class StoryRecord extends HiveObject {
     required this.colorValue,
     required this.lastEdit,
     this.hook = '',
+    this.notes = '',
   });
 
   factory StoryRecord.fromModel(Story s) {
@@ -53,6 +57,7 @@ class StoryRecord extends HiveObject {
       colorValue: s.color.toARGB32(),
       lastEdit: s.lastEdit,
       hook: s.hook,
+      notes: s.notes,
     );
   }
 

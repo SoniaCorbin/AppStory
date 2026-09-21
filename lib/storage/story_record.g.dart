@@ -25,13 +25,14 @@ class StoryRecordAdapter extends TypeAdapter<StoryRecord> {
       colorValue: fields[5] as int,
       lastEdit: fields[6] as String,
       hook: fields[7] as String,
+      notes: fields[8] as String? ?? '',
     );
   }
 
   @override
   void write(BinaryWriter writer, StoryRecord obj) {
     writer
-      ..writeByte(8)
+      ..writeByte(9)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -47,7 +48,9 @@ class StoryRecordAdapter extends TypeAdapter<StoryRecord> {
       ..writeByte(6)
       ..write(obj.lastEdit)
       ..writeByte(7)
-      ..write(obj.hook);
+      ..write(obj.hook)
+      ..writeByte(8)
+      ..write(obj.notes);
   }
 
   @override
@@ -56,9 +59,9 @@ class StoryRecordAdapter extends TypeAdapter<StoryRecord> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is StoryRecordAdapter &&
-          runtimeType == other.runtimeType &&
-          typeId == other.typeId;
+          other is StoryRecordAdapter &&
+              runtimeType == other.runtimeType &&
+              typeId == other.typeId;
 }
 
 class BlockRecordAdapter extends TypeAdapter<BlockRecord> {
@@ -93,7 +96,7 @@ class BlockRecordAdapter extends TypeAdapter<BlockRecord> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is BlockRecordAdapter &&
-          runtimeType == other.runtimeType &&
-          typeId == other.typeId;
+          other is BlockRecordAdapter &&
+              runtimeType == other.runtimeType &&
+              typeId == other.typeId;
 }

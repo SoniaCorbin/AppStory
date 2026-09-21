@@ -10,6 +10,7 @@ class Story {
   final Color color;
   final String lastEdit;
   final String hook;
+  final String notes;
 
   const Story({
     required this.id,
@@ -20,6 +21,7 @@ class Story {
     required this.color,
     required this.lastEdit,
     this.hook = '',
+    this.notes = '',
   });
 
   Story copyWith({
@@ -31,6 +33,7 @@ class Story {
     Color? color,
     String? lastEdit,
     String? hook,
+    String? notes,
   }) {
     return Story(
       id: id ?? this.id,
@@ -41,6 +44,7 @@ class Story {
       color: color ?? this.color,
       lastEdit: lastEdit ?? this.lastEdit,
       hook: hook ?? this.hook,
+      notes: notes ?? this.notes,
     );
   }
 }
