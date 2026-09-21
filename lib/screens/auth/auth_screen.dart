@@ -6,6 +6,7 @@ import '../../services/auth_service.dart';
 import '../../widgets/backgrounds/grid_bg.dart';
 import '../../widgets/backgrounds/mesh_blobs.dart';
 import '../../services/restore_service.dart';
+import '../../services/validation_service.dart';
 
 class AuthScreen extends StatefulWidget {
   final VoidCallback onSuccess;
@@ -34,6 +35,18 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   Future<void> _submit() async {
+    // Validation
+    final emailError = ValidationService.validateEmail(_emailCtrl.text);
+    if (emailError != null) {
+      setState(() => _error = emailError);
+      return;
+    }
+    final passwordError = ValidationService.validatePassword(_passwordCtrl.text);
+    if (passwordError != null) {
+      setState(() => _error = passwordError);
+      return;
+    }
+
     setState(() { _loading = true; _error = null; });
 
     try {

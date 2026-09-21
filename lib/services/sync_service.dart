@@ -3,6 +3,7 @@ import '../models/story.dart';
 import '../models/page_document.dart';
 import '../models/coffre_item.dart';
 import 'auth_service.dart';
+import 'validation_service.dart';
 
 class SyncService{
   static final _client = Supabase.instance.client;
@@ -16,9 +17,9 @@ class SyncService{
     await _client.from('stories').upsert({
       'id': story.id,
       'user_id': userId,
-      'title': story.title,
-      'genre': story.genre,
-      'hook': story.hook,
+      'title': ValidationService.sanitizeText(story.title, maxLength: 100),
+      'genre': ValidationService.sanitizeText(story.genre, maxLength: 50),
+      'hook': ValidationService.sanitizeContent(story.hook),
       'progress': story.progress,
       'color': story.color.value,
       'last_edit': story.lastEdit,
@@ -44,7 +45,7 @@ class SyncService{
     await _client.from('pages').upsert({
       'id': page.id,
       'user_id': userId,
-      'content': page.content,
+      'content': ValidationService.sanitizeContent(page.content),
       'created_at': page.createdAt.toIso8601String(),
       'updated_at': page.updatedAt.toIso8601String(),
     });
