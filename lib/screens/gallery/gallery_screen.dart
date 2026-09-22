@@ -9,6 +9,8 @@ import '../../state/gallery_provider.dart';
 import '../../widgets/backgrounds/grid_bg.dart';
 import '../../widgets/backgrounds/mesh_blobs.dart';
 import '../atelier/widgets/ham_btn.dart';
+import '../../services/gallery_share_service.dart';
+import 'shared_gallery_screen.dart';
 
 class GalleryScreen extends ConsumerWidget {
   final VoidCallback onMenu;
@@ -38,10 +40,23 @@ class GalleryScreen extends ConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         HamBtn(onMenu: onMenu),
-                        IconButton(
-                          icon: Icon(Icons.add_photo_alternate_rounded,
-                              color: C.primary),
-                          onPressed: () => _pickImage(context, ref),
+                        Row(
+                          children: [
+                            IconButton(
+                              icon: Icon(Icons.people_rounded, color: C.primary),
+                              tooltip: 'Galerie partagée',
+                              onPressed: () => Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => const SharedGalleryScreen(),
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.add_photo_alternate_rounded,
+                                  color: C.primary),
+                              onPressed: () => _pickImage(context, ref),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -67,8 +82,7 @@ class GalleryScreen extends ConsumerWidget {
                 child: items.isEmpty
                     ? _buildEmptyState()
                     : GridView.builder(
-                  padding:
-                  const EdgeInsets.fromLTRB(20, 8, 20, 120),
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 120),
                   gridDelegate:
                   const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
@@ -85,6 +99,23 @@ class GalleryScreen extends ConsumerWidget {
                     onDelete: () => ref
                         .read(galleryProvider.notifier)
                         .deleteItem(items[i].id),
+                    onShare: () async {
+                      await GalleryShareService.shareImage(
+                        imagePath: items[i].imagePath,
+                        title: items[i].title,
+                      );
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                                'Image partagée avec les co-auteurs 🖼️',
+                                style: StoryText.sans(
+                                    size: 13, color: C.text)),
+                            backgroundColor: C.surface,
+                          ),
+                        );
+                      }
+                    },
                   ),
                 ),
               ),
@@ -126,11 +157,13 @@ class _GalleryCard extends StatelessWidget {
   final GalleryItem item;
   final VoidCallback onFavorite;
   final VoidCallback onDelete;
+  final VoidCallback onShare;
 
   const _GalleryCard({
     required this.item,
     required this.onFavorite,
     required this.onDelete,
+    required this.onShare,
   });
 
   @override
@@ -183,9 +216,7 @@ class _GalleryCard extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
-                  item.isFavorite
-                      ? Icons.favorite
-                      : Icons.favorite_border,
+                  item.isFavorite ? Icons.favorite : Icons.favorite_border,
                   color: Colors.white,
                   size: 16,
                 ),
@@ -211,12 +242,30 @@ class _GalleryCard extends StatelessWidget {
             ),
           ),
 
+          // Bouton partager
+          Positioned(
+            bottom: 8,
+            right: 8,
+            child: GestureDetector(
+              onTap: onShare,
+              child: Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.35),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.share_rounded,
+                    color: Colors.white, size: 16),
+              ),
+            ),
+          ),
+
           // Titre si présent
           if (item.title.isNotEmpty)
             Positioned(
               bottom: 10,
               left: 10,
-              right: 10,
+              right: 40,
               child: Text(
                 item.title,
                 style: StoryText.sans(
