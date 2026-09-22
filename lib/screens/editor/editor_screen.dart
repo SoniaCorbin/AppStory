@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/constants/story_tokens.dart';
 import '../../core/theme/story_text_styles.dart';
 import '../../models/assembled_block.dart';
 import '../../models/story.dart';
+import '../../services/collab_service.dart';
 import '../../state/story_provider.dart';
 import '../../widgets/backgrounds/grid_bg.dart';
 import '../../widgets/backgrounds/mesh_blobs.dart';
@@ -25,8 +27,11 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
   late List<TextEditingController> _controllers;
   late TextEditingController _titleController;
   late TextEditingController _hookController;
-  late int _progress;
   late TextEditingController _notesController;
+  late int _progress;
+
+  RealtimeChannel? _channel;
+  final Map<int, String> _remoteEditors = {};
 
   @override
   void initState() {
@@ -37,19 +42,64 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     ];
     _titleController = TextEditingController(text: widget.story.title);
     _hookController = TextEditingController(text: widget.story.hook);
-    _progress = widget.story.progress;
     _notesController = TextEditingController(text: widget.story.notes);
+    _progress = widget.story.progress;
+
+    _subscribeToCollab();
+    _setupBroadcast();
   }
 
   @override
   void dispose() {
-    for (final c in _controllers) {
-      c.dispose();
-    }
+    for (final c in _controllers) c.dispose();
     _titleController.dispose();
     _hookController.dispose();
     _notesController.dispose();
+    if (_channel != null) CollabService.unsubscribe(_channel!);
     super.dispose();
+  }
+
+  void _subscribeToCollab() {
+    _channel = CollabService.subscribeToEdits(
+      storyId: widget.story.id,
+      onEdit: (edit) {
+        if (!mounted) return;
+        if (edit.blockIndex < _controllers.length) {
+          final ctrl = _controllers[edit.blockIndex];
+          // Applique seulement si différent pour éviter la boucle
+          if (ctrl.text != edit.content) {
+            final selection = ctrl.selection;
+            ctrl.text = edit.content;
+            // Restaure le curseur si possible
+            try {
+              ctrl.selection = selection;
+            } catch (_) {}
+          }
+        }
+        setState(() {
+          _remoteEditors[edit.blockIndex] = edit.userName;
+        });
+        // Efface l'indicateur après 3 secondes
+        Future.delayed(const Duration(seconds: 3), () {
+          if (mounted) {
+            setState(() => _remoteEditors.remove(edit.blockIndex));
+          }
+        });
+      },
+    );
+  }
+
+  void _setupBroadcast() {
+    for (var i = 0; i < _controllers.length; i++) {
+      final index = i;
+      _controllers[i].addListener(() {
+        CollabService.broadcastEdit(
+          storyId: widget.story.id,
+          blockIndex: index,
+          content: _controllers[index].text,
+        );
+      });
+    }
   }
 
   Future<void> _saveAndClose() async {
@@ -64,12 +114,11 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
           : _titleController.text.trim(),
       blocks: updatedBlocks,
       hook: _hookController.text.trim(),
+      notes: _notesController.text.trim(),
       lastEdit: 'à l\'instant',
       progress: _progress,
-      notes: _notesController.text.trim(),
     );
 
-    // Sauvegarde dans Hive via le provider
     await ref.read(storyProvider.notifier).updateStory(updatedStory);
 
     if (!mounted) return;
@@ -154,8 +203,8 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                         ),
                         onPressed: _saveAndClose,
                         child: Text('Enregistrer',
-                            style:
-                                StoryText.mono(size: 10, letterSpacing: 1.2)),
+                            style: StoryText.mono(
+                                size: 10, letterSpacing: 1.2)),
                       ),
                     ],
                   ),
@@ -166,11 +215,11 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
                   child: TextField(
                     controller: _titleController,
-                    style: StoryText.serif(size: 24, weight: FontWeight.w800),
+                    style:
+                    StoryText.serif(size: 24, weight: FontWeight.w800),
                     decoration: InputDecoration(
                       hintText: 'Titre de l\'histoire',
-                      hintStyle:
-                          StoryText.serif(size: 24, color: C.textDim),
+                      hintStyle: StoryText.serif(size: 24, color: C.textDim),
                       border: InputBorder.none,
                       enabledBorder: InputBorder.none,
                       focusedBorder: InputBorder.none,
@@ -204,7 +253,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                           minLines: 3,
                           maxLines: 8,
                           style: StoryText.serif(
-                                  size: 13, style: FontStyle.italic)
+                              size: 13, style: FontStyle.italic)
                               .copyWith(height: 1.7),
                           decoration: InputDecoration(
                             hintText: 'Saisis ou colle ici l\'amorce…',
@@ -229,7 +278,8 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                     decoration: BoxDecoration(
                       color: C.surface,
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+                      border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.06)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -238,9 +288,13 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text('PROGRESSION',
-                                style: StoryText.mono(size: 10, color: C.textDim, letterSpacing: 2)),
+                                style: StoryText.mono(
+                                    size: 10,
+                                    color: C.textDim,
+                                    letterSpacing: 2)),
                             Text('$_progress%',
-                                style: StoryText.mono(size: 12, color: C.primary)),
+                                style: StoryText.mono(
+                                    size: 12, color: C.primary)),
                           ],
                         ),
                         Slider(
@@ -250,12 +304,14 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                           divisions: 10,
                           activeColor: C.primary,
                           inactiveColor: C.surface3,
-                          onChanged: (val) => setState(() => _progress = val.round()),
+                          onChanged: (val) =>
+                              setState(() => _progress = val.round()),
                         ),
                       ],
                     ),
                   ),
                 ),
+
                 // Notes
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
@@ -264,22 +320,31 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                     decoration: BoxDecoration(
                       color: C.surface,
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+                      border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.06)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('✎ NOTES',
-                            style: StoryText.mono(size: 10, color: C.textDim, letterSpacing: 2.2)),
+                            style: StoryText.mono(
+                                size: 10,
+                                color: C.textDim,
+                                letterSpacing: 2.2)),
                         const SizedBox(height: 8),
                         TextField(
                           controller: _notesController,
                           minLines: 2,
                           maxLines: 6,
-                          style: StoryText.sans(size: 13, color: C.text).copyWith(height: 1.6),
+                          style: StoryText.sans(size: 13, color: C.text)
+                              .copyWith(height: 1.6),
                           decoration: InputDecoration(
-                            hintText: 'Idées rapides, rappels, questions en suspens…',
-                            hintStyle: StoryText.sans(size: 13, color: C.textDim, style: FontStyle.italic),
+                            hintText:
+                            'Idées rapides, rappels, questions en suspens…',
+                            hintStyle: StoryText.sans(
+                                size: 13,
+                                color: C.textDim,
+                                style: FontStyle.italic),
                             border: InputBorder.none,
                             enabledBorder: InputBorder.none,
                             focusedBorder: InputBorder.none,
@@ -290,6 +355,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                     ),
                   ),
                 ),
+
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
                   child: Text(
@@ -319,10 +385,8 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                     onReorder: (oldIndex, newIndex) {
                       setState(() {
                         if (newIndex > oldIndex) newIndex -= 1;
-
                         final b = _blocks.removeAt(oldIndex);
                         _blocks.insert(newIndex, b);
-
                         final c = _controllers.removeAt(oldIndex);
                         _controllers.insert(newIndex, c);
                       });
@@ -330,26 +394,50 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                     itemBuilder: (context, index) {
                       final block = _blocks[index];
                       final controller = _controllers[index];
+                      final remoteEditor = _remoteEditors[index];
 
                       return Container(
-                        key: ValueKey('block_${index}_${block.type.name}'),
+                        key: ValueKey(
+                            'block_${index}_${block.type.name}'),
                         margin: const EdgeInsets.only(bottom: 10),
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
                           color: C.surface,
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.06)),
+                            color: remoteEditor != null
+                                ? C.primary.withValues(alpha: 0.5)
+                                : Colors.white.withValues(alpha: 0.06),
+                            width: remoteEditor != null ? 1.5 : 1,
+                          ),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
                               children: [
-                                Expanded(child: BlockChip(type: block.type)),
+                                Expanded(
+                                    child: BlockChip(type: block.type)),
+                                if (remoteEditor != null)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: C.primary
+                                          .withValues(alpha: 0.15),
+                                      borderRadius:
+                                      BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      '✏️ $remoteEditor',
+                                      style: StoryText.mono(
+                                          size: 9, color: C.primary),
+                                    ),
+                                  ),
                                 IconButton(
                                   tooltip: 'Supprimer',
-                                  onPressed: () => _confirmDelete(index),
+                                  onPressed: () =>
+                                      _confirmDelete(index),
                                   icon: Icon(
                                       Icons.delete_outline_rounded,
                                       color: C.textMuted),
@@ -357,9 +445,10 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                                 ReorderableDragStartListener(
                                   index: index,
                                   child: Padding(
-                                    padding:
-                                        const EdgeInsets.symmetric(horizontal: 6),
-                                    child: Icon(Icons.drag_handle_rounded,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 6),
+                                    child: Icon(
+                                        Icons.drag_handle_rounded,
                                         color: C.textMuted),
                                   ),
                                 ),
@@ -374,7 +463,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                                 hintText: block.type.desc,
                                 filled: true,
                                 fillColor:
-                                    Colors.white.withValues(alpha: 0.03),
+                                Colors.white.withValues(alpha: 0.03),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                   borderSide: BorderSide(
@@ -394,7 +483,8 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                                           .withValues(alpha: 0.6)),
                                 ),
                               ),
-                              style: StoryText.sans(size: 13, color: C.text),
+                              style: StoryText.sans(
+                                  size: 13, color: C.text),
                             ),
                           ],
                         ),
