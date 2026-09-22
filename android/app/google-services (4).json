@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "165041604888",
+    "project_id": "storyblocks-f8111",
+    "storage_bucket": "storyblocks-f8111.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:165041604888:android:e6b251c42b117896d7f66d",
+        "android_client_info": {
+          "package_name": "com.storyblock.ca"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCoOUGR633IQAcHkD2brvidBBlvw8U9IJk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
