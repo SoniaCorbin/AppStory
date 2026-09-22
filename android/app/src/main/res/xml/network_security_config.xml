@@ -6,6 +6,26 @@
         </trust-anchors>
     </base-config>
 
+    <domain-config>
+        <domain includeSubdomains="false">api.anthropic.com</domain>
+        <pin-set expiration="2028-09-22">
+            <pin digest="SHA-256">n+OFHb16YVI8KEux43Lk4jjFsK76xLolavlcACQEXq4=</pin>
+        </pin-set>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+
+    <domain-config>
+        <domain includeSubdomains="true">supabase.co</domain>
+        <pin-set expiration="2028-09-22">
+            <pin digest="SHA-256">yyBDqvMo9Jc2CwnVJBDj8TE8u5xHielbUS/+h7VM2xs=</pin>
+        </pin-set>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+
     <debug-overrides>
         <trust-anchors>
             <certificates src="system" />
