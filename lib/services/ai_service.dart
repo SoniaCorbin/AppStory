@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/assembled_block.dart';
 import '../models/block_type.dart';
+import 'auth_service.dart';
 
 /// Service pour appeler l'API Claude d'Anthropic.
 class AiService {
@@ -10,38 +11,63 @@ class AiService {
   static const _apiVersion = '2023-06-01';
   static const _maxTokens = 1024;
 
+  // Rate limit local : 1 appel toutes les 10 secondes
+  static const _minInterval = Duration(seconds: 10);
+  static DateTime? _lastCall;
+
   /// Génère une amorce narrative via l'API Claude.
-  /// Throws en cas d'erreur réseau, clé invalide, etc.
+  /// Throws en cas d'erreur réseau, clé invalide, quota dépassé, etc.
   static Future<String> generateHook({
     required List<AssembledBlock> blocks,
     required String apiKey,
+    bool isPremium = false,
   }) async {
     if (apiKey.trim().isEmpty) {
       throw Exception('Clé API manquante');
     }
 
+    // Rate limit local
+    final now = DateTime.now();
+    if (_lastCall != null && now.difference(_lastCall!) < _minInterval) {
+      final wait = _minInterval - now.difference(_lastCall!);
+      throw Exception(
+          'Attends encore ${wait.inSeconds}s avant de générer à nouveau.');
+    }
+
+    // Quota mensuel Supabase
+    final canGenerate = await AuthService.canGenerate(isPremium: isPremium);
+    if (!canGenerate) {
+      throw Exception(
+          'Quota mensuel atteint (5 générations). Passe en premium pour générer sans limite.');
+    }
+
     final prompt = _buildPrompt(blocks);
+
+    _lastCall = now;
 
     final response = await http
         .post(
-          Uri.parse(_apiUrl),
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': apiKey,
-            'anthropic-version': _apiVersion,
-          },
-          body: jsonEncode({
-            'model': _model,
-            'max_tokens': _maxTokens,
-            'messages': [
-              {'role': 'user', 'content': prompt}
-            ],
-          }),
-        )
+      Uri.parse(_apiUrl),
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': _apiVersion,
+      },
+      body: jsonEncode({
+        'model': _model,
+        'max_tokens': _maxTokens,
+        'messages': [
+          {'role': 'user', 'content': prompt}
+        ],
+      }),
+    )
         .timeout(const Duration(seconds: 30));
 
+    if (response.statusCode == 429) {
+      throw Exception('Trop de requêtes. Réessaie dans quelques secondes.');
+    }
+
     if (response.statusCode != 200) {
-      // Décode l'erreur si possible
       try {
         final body = jsonDecode(response.body);
         final errMsg = body['error']?['message'] ?? response.body;
@@ -51,6 +77,9 @@ class AiService {
             'Claude API ${response.statusCode} : ${response.body}');
       }
     }
+
+    // Enregistre la génération dans Supabase
+    await AuthService.recordGeneration();
 
     final data = jsonDecode(response.body);
     final contentList = data['content'] as List?;
