@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
+import '../chat/chat_screen.dart';
 import '../../core/constants/story_tokens.dart';
 import '../../core/theme/story_text_styles.dart';
 import '../../models/story.dart';
@@ -11,6 +11,7 @@ import '../../widgets/backgrounds/mesh_blobs.dart';
 import '../../widgets/chips/block_chip.dart';
 import '../editor/editor_screen.dart';
 import '../reader/reader_screen.dart';
+
 
 class StoryDetailScreen extends ConsumerStatefulWidget {
   final Story story;
@@ -346,7 +347,25 @@ class _StoryDetailScreenState extends ConsumerState<StoryDetailScreen> {
                       ),
                     ),
                   ),
-
+                // Chat
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: C.primary.withValues(alpha: 0.16),
+                        foregroundColor: C.primary,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => ChatScreen(story: story)),
+                      ),
+                      child: const Text('💬 Chat du projet'),
+                    ),
+                  ),
+                ),
                 // Actions
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
