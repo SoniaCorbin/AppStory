@@ -11,6 +11,7 @@ import '../../widgets/backgrounds/mesh_blobs.dart';
 import 'widgets/streak_banner.dart';
 import 'widgets/story_card.dart';
 import '../../state/profile_provider.dart';
+import '../marketplace/marketplace_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   final VoidCallback onMenu;
@@ -99,6 +100,60 @@ class HomeScreen extends ConsumerWidget {
               ),
 
               const StreakBanner(),
+
+              // Marketplace
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                child: GestureDetector(
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const MarketplaceScreen()),
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: C.surface,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: C.primary.withValues(alpha: 0.25)),
+                      boxShadow: [
+                        BoxShadow(
+                            color: C.primary.withValues(alpha: 0.08),
+                            blurRadius: 20),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: C.primary.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text('◈',
+                              style: TextStyle(fontSize: 20, color: C.primary)),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Marketplace',
+                                  style: StoryText.serif(
+                                      size: 15, weight: FontWeight.w700)),
+                              Text('Templates de blocs pour démarrer vite',
+                                  style: StoryText.sans(
+                                      size: 12,
+                                      color: C.textMuted,
+                                      style: FontStyle.italic)),
+                            ],
+                          ),
+                        ),
+                        Icon(Icons.arrow_forward_ios_rounded,
+                            size: 14, color: C.textDim),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
 
               // Recents
               Padding(
