@@ -11,6 +11,7 @@ import '../../widgets/backgrounds/mesh_blobs.dart';
 import '../atelier/widgets/ham_btn.dart';
 import 'widgets/event_tile.dart';
 import 'widgets/month_grid.dart';
+import '../../services/calendar_service.dart';
 
 class AgendaScreen extends ConsumerStatefulWidget {
   final VoidCallback onMenu;
@@ -33,6 +34,42 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     final now = DateTime.now();
     month = _monthOnly(now);
     selected = _dayOnly(now);
+  }
+
+  Future<void> _syncGoogleCalendar() async {
+    final signedIn = CalendarService.isSignedIn
+        ? true
+        : await CalendarService.signIn();
+
+    if (!signedIn) return;
+
+    final events = await CalendarService.getUpcomingEvents(maxResults: 20);
+
+    for (final event in events) {
+      final start = event.start?.dateTime ?? event.start?.date;
+      if (start == null) continue;
+
+      final title = event.summary ?? 'Événement Google';
+      final time =
+          '${start.hour.toString().padLeft(2, '0')}:${start.minute.toString().padLeft(2, '0')}';
+
+      ref.read(agendaProvider.notifier).addEvent(
+        date: start,
+        title: '📅 $title',
+        time: time,
+        color: '🔵',
+      );
+    }
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${events.length} événements importés depuis Google Calendar',
+              style: StoryText.sans(size: 13, color: C.text)),
+          backgroundColor: C.surface,
+        ),
+      );
+    }
   }
 
   String _shortMonth(int m) {
@@ -92,7 +129,17 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    HamBtn(onMenu: widget.onMenu),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        HamBtn(onMenu: widget.onMenu),
+                        IconButton(
+                          icon: Icon(Icons.sync_rounded, color: C.green),
+                          tooltip: 'Sync Google Calendar',
+                          onPressed: _syncGoogleCalendar,
+                        ),
+                      ],
+                    ),
                     Text('◷ AGENDA',
                         style: StoryText.mono(
                             size: 10, color: C.green, letterSpacing: 3)),
