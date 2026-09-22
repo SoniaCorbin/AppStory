@@ -17,10 +17,29 @@ import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'services/billing_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'services/root_detection_service.dart';
 
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  if (RootDetectionService.isRooted) {
+    runApp(
+      const MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: Scaffold(
+          body: Center(
+            child: Text(
+              'Appareil non supporté.',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ),
+      ),
+    );
+    return;
+  }
+
   await dotenv.load(fileName: '.env');
 
   await Supabase.initialize(
